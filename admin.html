@@ -1,0 +1,2316 @@
+<!doctype html>
+<html lang="fil">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bugandayari — Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --forest: #1c3a1c;
+        --green: #2d5a27;
+        --sage: #4a7c45;
+        --mint: #7fb87a;
+        --pale: #e8f2e8;
+        --cream: #f5f2ec;
+        --parch: #edeae2;
+        --tan: #d4c9b0;
+        --terra: #c0693a;
+        --gold: #c8940a;
+        --text: #1a2a1a;
+        --text2: #3a4d3a;
+        --text3: #7a8f7a;
+        --white: #ffffff;
+        --red: #b33a2a;
+        --red-bg: #fdf0ed;
+        --border: #cdc4b0;
+        --sidebar: 220px;
+        --r: 10px;
+        --sh: 0 1px 6px rgba(28, 58, 28, 0.08);
+        --sh-md: 0 4px 16px rgba(28, 58, 28, 0.12);
+      }
+      html {
+        font-size: 15px;
+      }
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--cream);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      /* LOGIN */
+      #login-screen {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--forest);
+        background-image: repeating-linear-gradient(
+          45deg,
+          rgba(255, 255, 255, 0.015) 0px,
+          rgba(255, 255, 255, 0.015) 1px,
+          transparent 1px,
+          transparent 12px
+        );
+      }
+      .login-box {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 2.5rem 2rem;
+        width: 100%;
+        max-width: 380px;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+        text-align: center;
+      }
+      .login-logo {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 1.9rem;
+        font-weight: 900;
+        color: var(--forest);
+        margin-bottom: 0.3rem;
+      }
+      .login-sub {
+        font-size: 0.8rem;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 2rem;
+      }
+      .login-badge {
+        display: inline-block;
+        background: var(--pale);
+        color: var(--green);
+        border: 1px solid #c0d8c0;
+        border-radius: 20px;
+        padding: 0.25rem 0.9rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 1.5rem;
+      }
+      .login-field {
+        margin-bottom: 1rem;
+        text-align: left;
+      }
+      .login-field label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text2);
+        margin-bottom: 0.3rem;
+      }
+      .login-field input {
+        width: 100%;
+        padding: 0.75rem 0.9rem;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r);
+        font-size: 1rem;
+        font-family: "DM Sans", sans-serif;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .login-field input:focus {
+        border-color: var(--sage);
+      }
+      .login-btn {
+        width: 100%;
+        padding: 0.8rem;
+        background: var(--green);
+        color: #fff;
+        border: none;
+        border-radius: var(--r);
+        font-size: 1rem;
+        font-weight: 700;
+        font-family: "DM Sans", sans-serif;
+        cursor: pointer;
+        margin-top: 0.5rem;
+        transition: background 0.15s;
+      }
+      .login-btn:hover {
+        background: var(--forest);
+      }
+      .login-error {
+        color: var(--red);
+        font-size: 0.82rem;
+        margin-top: 0.5rem;
+        min-height: 1.2rem;
+        font-weight: 500;
+      }
+      .login-hint {
+        font-size: 0.72rem;
+        color: var(--text3);
+        margin-top: 1.5rem;
+      }
+
+      /* APP */
+      #app-shell {
+        display: none;
+        min-height: 100vh;
+      }
+      #app-shell.visible {
+        display: flex;
+      }
+
+      /* SIDEBAR */
+      .sidebar {
+        width: var(--sidebar);
+        background: var(--forest);
+        color: #fff;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 100;
+        overflow-y: auto;
+      }
+      .sb-brand {
+        padding: 1.4rem 1.2rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .sb-logo {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 1.3rem;
+        font-weight: 900;
+        color: #fff;
+        line-height: 1;
+      }
+      .sb-badge {
+        display: inline-block;
+        background: rgba(127, 184, 122, 0.2);
+        color: var(--mint);
+        border: 1px solid rgba(127, 184, 122, 0.3);
+        border-radius: 20px;
+        padding: 0.1rem 0.55rem;
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin-top: 0.4rem;
+      }
+      .sb-nav {
+        padding: 0.75rem 0;
+        flex: 1;
+      }
+      .sb-item {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.72rem 1.2rem;
+        cursor: pointer;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.88rem;
+        font-weight: 500;
+        transition: all 0.15s;
+        border-left: 3px solid transparent;
+      }
+      .sb-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(255, 255, 255, 0.9);
+      }
+      .sb-item.active {
+        background: rgba(127, 184, 122, 0.12);
+        color: #fff;
+        border-left-color: var(--mint);
+      }
+      .sb-item .sb-icon {
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        width: 1.4rem;
+        text-align: center;
+      }
+      .sb-section {
+        padding: 0.5rem 1.2rem 0.2rem;
+        font-size: 0.62rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+      .sb-footer {
+        padding: 1rem 1.2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .sb-user {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.45);
+        margin-bottom: 0.5rem;
+      }
+      .sb-logout {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        padding: 0.4rem 0;
+        transition: color 0.15s;
+      }
+      .sb-logout:hover {
+        color: #fff;
+      }
+      .sb-farmer-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--mint);
+        cursor: pointer;
+        padding: 0.4rem 0;
+        text-decoration: none;
+      }
+
+      /* MAIN */
+      .content-area {
+        margin-left: var(--sidebar);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .topbar {
+        background: var(--white);
+        border-bottom: 1px solid var(--border);
+        padding: 0.85rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        box-shadow: var(--sh);
+      }
+      .page-title {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--forest);
+      }
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .main-pad {
+        padding: 1.5rem;
+        flex: 1;
+      }
+      .panel {
+        display: none;
+      }
+      .panel.active {
+        display: block;
+      }
+
+      /* CARDS */
+      .card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        box-shadow: var(--sh);
+        overflow: hidden;
+      }
+      .card-hd {
+        padding: 0.9rem 1.2rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--white);
+      }
+      .card-title {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--forest);
+      }
+      .card-body {
+        padding: 1.2rem;
+      }
+
+      /* KPI */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .kpi {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 1.1rem 1.2rem;
+        box-shadow: var(--sh);
+        position: relative;
+        overflow: hidden;
+      }
+      .kpi-accent {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+      }
+      .kpi-n {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--forest);
+        line-height: 1;
+      }
+      .kpi-l {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-top: 0.3rem;
+      }
+
+      /* TABLE */
+      .tbl-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 0.65rem 0.9rem;
+        text-align: left;
+        font-size: 0.85rem;
+      }
+      th {
+        background: var(--parch);
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--tan);
+      }
+      td {
+        border-bottom: 1px solid var(--parch);
+        color: var(--text);
+        vertical-align: middle;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tbody tr {
+        transition: background 0.1s;
+      }
+      tbody tr:hover {
+        background: #fafaf7;
+      }
+      .row-actions {
+        display: flex;
+        gap: 0.4rem;
+        justify-content: flex-end;
+      }
+
+      /* BUTTONS */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.55rem 1rem;
+        border-radius: var(--r);
+        border: none;
+        font-family: "DM Sans", sans-serif;
+        font-weight: 600;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      .btn-sm {
+        padding: 0.35rem 0.7rem;
+        font-size: 0.75rem;
+      }
+      .btn-primary {
+        background: var(--green);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--forest);
+      }
+      .btn-ghost {
+        background: var(--parch);
+        color: var(--text2);
+        border: 1px solid var(--border);
+      }
+      .btn-ghost:hover {
+        background: var(--tan);
+      }
+      .btn-danger {
+        background: var(--red-bg);
+        color: var(--red);
+        border: 1px solid #e5a49a;
+      }
+      .btn-danger:hover {
+        background: var(--red);
+        color: #fff;
+      }
+      .btn-gold {
+        background: #fef8e7;
+        color: #8a5f00;
+        border: 1px solid #f0d080;
+      }
+      .btn-gold:hover {
+        background: #fff3cc;
+      }
+      .btn-info {
+        background: #e8f0fe;
+        color: #1a4a99;
+        border: 1px solid #9fb8f8;
+      }
+      .btn-info:hover {
+        background: #1a4a99;
+        color: #fff;
+      }
+
+      /* BADGES */
+      .badge {
+        display: inline-block;
+        padding: 0.15rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .b-planted {
+        background: #e8f5e9;
+        color: #256029;
+        border: 1px solid #b2dfb5;
+      }
+      .b-growing {
+        background: #f1f8e9;
+        color: #4a7a1e;
+        border: 1px solid #c5e1a5;
+      }
+      .b-ready {
+        background: #fef8e7;
+        color: #8a5f00;
+        border: 1px solid #ffe082;
+      }
+      .b-harvested {
+        background: #e8f0fe;
+        color: #1a4a99;
+        border: 1px solid #9fb8f8;
+      }
+      .t-up {
+        color: #c0392b;
+        font-weight: 700;
+      }
+      .t-down {
+        color: #27ae60;
+        font-weight: 700;
+      }
+      .t-same {
+        color: #aaa;
+        font-weight: 700;
+      }
+
+      /* PRICE EDIT */
+      .price-input {
+        width: 80px;
+        padding: 0.3rem 0.5rem;
+        border: 1.5px solid var(--border);
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-family: "DM Sans", sans-serif;
+        outline: none;
+        text-align: right;
+      }
+      .price-input:focus {
+        border-color: var(--sage);
+      }
+      select.trend-sel {
+        padding: 0.28rem 0.5rem;
+        border: 1.5px solid var(--border);
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-family: "DM Sans", sans-serif;
+        outline: none;
+        background: var(--white);
+        cursor: pointer;
+      }
+      select.trend-sel:focus {
+        border-color: var(--sage);
+      }
+
+      /* MODAL */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 20, 10, 0.52);
+        z-index: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        animation: fIn 0.2s ease;
+      }
+      .overlay.hidden {
+        display: none;
+      }
+      @keyframes fIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .modal {
+        background: var(--white);
+        border-radius: 14px;
+        width: 100%;
+        max-width: 520px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+        animation: sUp 0.22s ease;
+      }
+      .modal.wide {
+        max-width: 720px;
+      }
+      @keyframes sUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .modal-hd {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.2rem 0.8rem;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: var(--white);
+        z-index: 1;
+      }
+      .modal-title {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--forest);
+      }
+      .mclose {
+        background: var(--parch);
+        border: none;
+        border-radius: 50%;
+        width: 1.8rem;
+        height: 1.8rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text2);
+        transition: background 0.15s;
+      }
+      .mclose:hover {
+        background: var(--tan);
+      }
+      .modal-bd {
+        padding: 1rem 1.2rem;
+      }
+      .modal-ft {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        padding: 0.7rem 1.2rem 1.1rem;
+        border-top: 1px solid var(--border);
+      }
+      .field {
+        margin-bottom: 0.9rem;
+      }
+      .field label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text2);
+        margin-bottom: 0.28rem;
+        letter-spacing: 0.02em;
+      }
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        padding: 0.65rem 0.85rem;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-family: "DM Sans", sans-serif;
+        background: var(--white);
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s;
+        appearance: none;
+      }
+      .field input:focus,
+      .field select:focus,
+      .field textarea:focus {
+        border-color: var(--sage);
+      }
+      .field textarea {
+        min-height: 70px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+      .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+      }
+
+      /* TOAST */
+      .toast {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        background: var(--forest);
+        color: #fff;
+        padding: 0.65rem 1.2rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        z-index: 999;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        display: none;
+        max-width: 320px;
+      }
+      .toast.show {
+        display: block;
+        animation: toastPop 0.25s ease;
+      }
+      @keyframes toastPop {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .confirm-box {
+        background: var(--white);
+        border-radius: 14px;
+        padding: 2rem;
+        width: 100%;
+        max-width: 380px;
+        text-align: center;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+      }
+      .confirm-box h3 {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--forest);
+        margin-bottom: 0.75rem;
+      }
+      .confirm-box p {
+        font-size: 0.88rem;
+        color: var(--text2);
+        line-height: 1.5;
+        margin-bottom: 1.4rem;
+      }
+      .confirm-btns {
+        display: flex;
+        gap: 0.6rem;
+        justify-content: center;
+      }
+      .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.2rem;
+      }
+      .settings-item {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 1.2rem;
+        box-shadow: var(--sh);
+      }
+      .settings-item h4 {
+        font-family: "Fraunces", Georgia, serif;
+        font-weight: 700;
+        color: var(--forest);
+        margin-bottom: 0.4rem;
+      }
+      .settings-item p {
+        font-size: 0.8rem;
+        color: var(--text3);
+        margin-bottom: 1rem;
+        line-height: 1.45;
+      }
+
+      /* ACCOUNTS */
+      .acct-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 1rem 1.2rem;
+        margin-bottom: 0.8rem;
+        box-shadow: var(--sh);
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        transition: box-shadow 0.15s;
+      }
+      .acct-card:hover {
+        box-shadow: var(--sh-md);
+      }
+      .acct-avatar {
+        width: 2.8rem;
+        height: 2.8rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--green) 0%, var(--sage) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: #fff;
+        font-family: "Fraunces", Georgia, serif;
+        flex-shrink: 0;
+      }
+      .acct-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .acct-name {
+        font-family: "Fraunces", Georgia, serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--forest);
+      }
+      .acct-meta {
+        font-size: 0.72rem;
+        color: var(--text3);
+        margin-top: 0.2rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .acct-stats {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .acct-stat {
+        background: var(--parch);
+        border-radius: 20px;
+        padding: 0.18rem 0.65rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text2);
+      }
+      .acct-actions {
+        display: flex;
+        gap: 0.4rem;
+        align-items: flex-start;
+        flex-shrink: 0;
+      }
+
+      /* DATA DETAIL MODAL */
+      .user-data-section {
+        margin-bottom: 1.2rem;
+      }
+      .user-data-section h4 {
+        font-family: "Fraunces", Georgia, serif;
+        font-weight: 700;
+        color: var(--forest);
+        margin-bottom: 0.6rem;
+        font-size: 0.95rem;
+      }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.4rem 0;
+        border-bottom: 1px solid var(--parch);
+        font-size: 0.85rem;
+      }
+      .detail-label {
+        color: var(--text3);
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        flex-shrink: 0;
+      }
+      .detail-val {
+        text-align: right;
+        font-weight: 500;
+      }
+      .no-data {
+        text-align: center;
+        padding: 1rem;
+        color: var(--text3);
+        font-size: 0.82rem;
+      }
+
+      /* SEARCH */
+      .search-box {
+        padding: 0.55rem 0.9rem;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r);
+        font-size: 0.85rem;
+        font-family: "DM Sans", sans-serif;
+        outline: none;
+        transition: border-color 0.2s;
+        background: var(--white);
+        min-width: 200px;
+      }
+      .search-box:focus {
+        border-color: var(--sage);
+      }
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 0.9rem;
+      }
+      .chip {
+        background: var(--parch);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.73rem;
+        font-weight: 600;
+        color: var(--text2);
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .chip:hover {
+        border-color: var(--sage);
+      }
+      .chip.on {
+        background: var(--green);
+        border-color: var(--green);
+        color: #fff;
+      }
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.2rem;
+      }
+      .empty {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: var(--text3);
+        font-size: 0.88rem;
+      }
+      .empty-ico {
+        font-size: 2rem;
+        margin-bottom: 0.4rem;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .flex {
+        display: flex;
+      }
+      .gap1 {
+        gap: 1rem;
+      }
+      .mt1 {
+        margin-top: 1rem;
+      }
+      .mt15 {
+        margin-top: 1.5rem;
+      }
+      .mb1 {
+        margin-bottom: 1rem;
+      }
+      @media (max-width: 900px) {
+        .sidebar {
+          width: 60px;
+        }
+        .sb-item span:not(.sb-icon) {
+          display: none;
+        }
+        .sb-brand,
+        .sb-section,
+        .sb-footer .sb-user,
+        .sb-footer a span {
+          display: none;
+        }
+        .content-area {
+          margin-left: 60px;
+        }
+        .kpi-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .settings-grid,
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- LOGIN -->
+    <div id="login-screen">
+      <div class="login-box">
+        <div class="login-logo">🌾 Bugandayari</div>
+        <div class="login-sub">Farm Management System</div>
+        <div class="login-badge">Admin Portal</div>
+        <div class="login-field">
+          <label>Username</label
+          ><input
+            type="text"
+            id="l-user"
+            value="admin"
+            autocomplete="username"
+            placeholder="admin"
+          />
+        </div>
+        <div class="login-field">
+          <label>Password</label
+          ><input
+            type="password"
+            id="l-pw"
+            placeholder="••••••••"
+            autocomplete="current-password"
+          />
+        </div>
+        <button class="login-btn" onclick="doLogin()">Mag-login →</button>
+        <div class="login-error" id="l-err"></div>
+        <div class="login-hint">Default password: <code>admin1234</code></div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="app-shell">
+      <!-- SIDEBAR -->
+      <nav class="sidebar">
+        <div class="sb-brand">
+          <div class="sb-logo">🌾 Bugandayari</div>
+          <div class="sb-badge">Admin</div>
+        </div>
+        <div class="sb-nav">
+          <div class="sb-section">Overview</div>
+          <div class="sb-item active" data-panel="dashboard">
+            <span class="sb-icon">📊</span><span>Dashboard</span>
+          </div>
+          <div class="sb-section">Pamamahala</div>
+          <div class="sb-item" data-panel="accounts">
+            <span class="sb-icon">👥</span><span>Mga Account</span>
+          </div>
+          <div class="sb-item" data-panel="prices">
+            <span class="sb-icon">💰</span><span>Presyo</span>
+          </div>
+          <div class="sb-item" data-panel="crops">
+            <span class="sb-icon">🌱</span><span>Tanaman</span>
+          </div>
+          <div class="sb-section">System</div>
+          <div class="sb-item" data-panel="settings">
+            <span class="sb-icon">⚙️</span><span>Settings</span>
+          </div>
+        </div>
+        <div class="sb-footer">
+          <div class="sb-user">Naka-login bilang Admin</div>
+          <a href="index.html" class="sb-farmer-link"
+            >👨‍🌾 <span>Farmer View</span></a
+          >
+          <div class="sb-logout" onclick="doLogout()">
+            🚪 <span>Mag-logout</span>
+          </div>
+        </div>
+      </nav>
+
+      <!-- CONTENT -->
+      <div class="content-area">
+        <div class="topbar">
+          <div class="page-title" id="page-title">Dashboard</div>
+          <div class="topbar-right">
+            <span
+              id="now-time"
+              style="font-size: 0.8rem; color: var(--text3)"
+            ></span>
+          </div>
+        </div>
+
+        <div class="main-pad">
+          <!-- DASHBOARD -->
+          <div class="panel active" id="panel-dashboard">
+            <div class="kpi-grid">
+              <div class="kpi">
+                <div class="kpi-n" id="d-accounts">0</div>
+                <div class="kpi-l">Mga Account</div>
+                <div class="kpi-accent" style="background: var(--mint)"></div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-n" id="d-total">0</div>
+                <div class="kpi-l">Lahat ng Tanaman</div>
+                <div class="kpi-accent" style="background: var(--sage)"></div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-n" id="d-harvest">0</div>
+                <div class="kpi-l">Handa nang Anihin</div>
+                <div class="kpi-accent" style="background: var(--gold)"></div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-n" id="d-prices">0</div>
+                <div class="kpi-l">Mga Presyo</div>
+                <div class="kpi-accent" style="background: #1565c0"></div>
+              </div>
+            </div>
+            <div class="two-col">
+              <div class="card">
+                <div class="card-hd">
+                  <div class="card-title">👥 Pinakabagong Mga Account</div>
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    onclick="switchPanel('accounts')"
+                  >
+                    Tingnan Lahat
+                  </button>
+                </div>
+                <div class="tbl-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Username</th>
+                        <th>Tanaman</th>
+                        <th>Nag-register</th>
+                      </tr>
+                    </thead>
+                    <tbody id="d-accounts-tb"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-hd">
+                  <div class="card-title">⚠️ Mag-aani Agad (7 Araw)</div>
+                </div>
+                <div class="tbl-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Pananim</th>
+                        <th>Account</th>
+                        <th>Araw Na Lang</th>
+                      </tr>
+                    </thead>
+                    <tbody id="d-due-tb"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACCOUNTS -->
+          <div class="panel" id="panel-accounts">
+            <div class="card mb1">
+              <div class="card-hd">
+                <div class="card-title">Lahat ng Registered Accounts</div>
+                <input
+                  type="search"
+                  class="search-box"
+                  id="acct-search"
+                  placeholder="Maghanap ng account…"
+                  oninput="renderAccounts()"
+                />
+              </div>
+              <div
+                class="card-body"
+                id="accounts-list-body"
+                style="padding: 0.75rem 1.2rem"
+              >
+                <div class="empty">
+                  <div class="empty-ico">👥</div>
+                  <p>Wala pang mga account.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PRICES -->
+          <div class="panel" id="panel-prices">
+            <div class="card mb1">
+              <div class="card-hd">
+                <div class="card-title">I-manage ang Presyo ng Palengke</div>
+                <div style="display: flex; gap: 0.5rem">
+                  <button
+                    class="btn btn-gold btn-sm"
+                    onclick="openAddPriceModal()"
+                  >
+                    + Bagong Presyo
+                  </button>
+                  <button
+                    class="btn btn-primary btn-sm"
+                    onclick="saveAllPrices()"
+                  >
+                    💾 I-save Lahat
+                  </button>
+                </div>
+              </div>
+              <div class="card-body" style="padding-bottom: 0.5rem">
+                <div
+                  style="
+                    display: flex;
+                    gap: 0.75rem;
+                    align-items: center;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <input
+                    type="search"
+                    class="search-box"
+                    id="p-search"
+                    placeholder="Maghanap ng produkto…"
+                    oninput="renderAdminPrices()"
+                  />
+                  <div class="chip-row" id="p-cat-chips" style="margin: 0">
+                    <span class="chip on" data-cat="all">Lahat</span>
+                    <span class="chip" data-cat="Bigas">🌾 Bigas</span>
+                    <span class="chip" data-cat="Mais">🌽 Mais</span>
+                    <span class="chip" data-cat="Gulay">🥬 Gulay</span>
+                    <span class="chip" data-cat="Prutas">🍌 Prutas</span>
+                    <span class="chip" data-cat="Ugat">🥕 Ugat</span>
+                  </div>
+                </div>
+              </div>
+              <div class="tbl-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Produkto</th>
+                      <th>Kategorya</th>
+                      <th>Yunit</th>
+                      <th>Presyo (₱)</th>
+                      <th>Trend</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="prices-tb"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- CROPS (ALL USERS) -->
+          <div class="panel" id="panel-crops">
+            <div class="card">
+              <div class="card-hd">
+                <div class="card-title">
+                  Lahat ng Rekord ng Tanaman (All Accounts)
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center">
+                  <input
+                    type="search"
+                    class="search-box"
+                    id="c-search"
+                    placeholder="Maghanap…"
+                    oninput="renderAdminCrops()"
+                  />
+                </div>
+              </div>
+              <div class="card-body" style="padding-bottom: 0.3rem">
+                <div class="chip-row" id="c-filter-chips">
+                  <span class="chip on" data-cf="all">Lahat</span>
+                  <span class="chip" data-cf="Planted">🌱 Nagtanim</span>
+                  <span class="chip" data-cf="Growing">🌿 Lumalaki</span>
+                  <span class="chip" data-cf="Ready to Harvest"
+                    >🌾 Handa na</span
+                  >
+                  <span class="chip" data-cf="Harvested">✅ Na-ani</span>
+                </div>
+              </div>
+              <div class="tbl-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Pangalan</th>
+                      <th>Account</th>
+                      <th>Katayuan</th>
+                      <th>Petsa ng Tanim</th>
+                      <th>Petsa ng Ani</th>
+                      <th>Araw</th>
+                    </tr>
+                  </thead>
+                  <tbody id="crops-tb"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- SETTINGS -->
+          <div class="panel" id="panel-settings">
+            <div class="settings-grid">
+              <div class="settings-item">
+                <h4>🔐 Baguhin ang Password</h4>
+                <p>Palitan ang admin password para sa seguridad.</p>
+                <div class="field">
+                  <label>Kasalukuyang Password</label
+                  ><input
+                    type="password"
+                    id="s-cur-pw"
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div class="field">
+                  <label>Bagong Password</label
+                  ><input
+                    type="password"
+                    id="s-new-pw"
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div class="field">
+                  <label>Ulitin ang Bagong Password</label
+                  ><input
+                    type="password"
+                    id="s-rep-pw"
+                    placeholder="••••••••"
+                  />
+                </div>
+                <button class="btn btn-primary" onclick="changePw()">
+                  I-update ang Password
+                </button>
+                <div
+                  id="pw-msg"
+                  style="
+                    font-size: 0.78rem;
+                    margin-top: 0.5rem;
+                    min-height: 1.1rem;
+                  "
+                ></div>
+              </div>
+              <div class="settings-item">
+                <h4>📤 I-export ang Data</h4>
+                <p>
+                  I-download ang lahat ng rekord bilang JSON file para sa
+                  backup.
+                </p>
+                <button
+                  class="btn btn-ghost"
+                  onclick="exportData()"
+                  style="margin-bottom: 0.6rem; width: 100%"
+                >
+                  ⬇️ I-export ang Lahat ng Data
+                </button>
+                <h4 style="margin-top: 1rem">📥 I-import ang Data</h4>
+                <p style="margin-top: 0.3rem">
+                  I-upload ang JSON backup file para i-restore ang data.
+                </p>
+                <label
+                  class="btn btn-ghost"
+                  style="
+                    margin-top: 0.3rem;
+                    width: 100%;
+                    justify-content: center;
+                    cursor: pointer;
+                  "
+                  >⬆️ Pumili ng JSON File<input
+                    type="file"
+                    accept=".json"
+                    style="display: none"
+                    onchange="importData(event)"
+                /></label>
+              </div>
+              <div class="settings-item">
+                <h4>🔄 I-reset ang Presyo</h4>
+                <p>
+                  Ibalik ang lahat ng presyo sa mga default na halaga mula sa DA
+                  data.
+                </p>
+                <button class="btn btn-danger" onclick="confirmResetPrices()">
+                  I-reset ang Presyo sa Default
+                </button>
+              </div>
+              <div class="settings-item">
+                <h4>🗑️ I-clear ang Lahat ng Tanaman</h4>
+                <p>
+                  Permanently na burahin ang lahat ng rekord ng tanaman ng lahat
+                  ng users. Hindi na mababawi.
+                </p>
+                <button class="btn btn-danger" onclick="confirmClearAllCrops()">
+                  Burahin ang Lahat ng Tanaman
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- ADD/EDIT PRICE -->
+    <div class="overlay hidden" id="ov-price">
+      <div class="modal">
+        <div class="modal-hd">
+          <span class="modal-title" id="pm-title">Bagong Presyo</span
+          ><button class="mclose" onclick="closeOv('ov-price')">✕</button>
+        </div>
+        <div class="modal-bd">
+          <input type="hidden" id="pm-id" />
+          <div class="field-row">
+            <div class="field">
+              <label>Pangalan ng Produkto *</label
+              ><input type="text" id="pm-name" placeholder="hal. Kamatis" />
+            </div>
+            <div class="field">
+              <label>Kategorya *</label
+              ><select id="pm-cat">
+                <option value="Bigas">🌾 Bigas</option>
+                <option value="Mais">🌽 Mais</option>
+                <option value="Gulay">🥬 Gulay</option>
+                <option value="Prutas">🍌 Prutas</option>
+                <option value="Ugat">🥕 Ugat</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Presyo (₱) *</label
+              ><input
+                type="number"
+                id="pm-price"
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div class="field">
+              <label>Yunit *</label
+              ><input
+                type="text"
+                id="pm-unit"
+                placeholder="kilo / piraso / bigkis"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label>Trend</label
+            ><select id="pm-trend">
+              <option value="same">— Walang pagbabago</option>
+              <option value="up">▲ Tumaas</option>
+              <option value="down">▼ Bumaba</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-ft">
+          <button class="btn btn-ghost" onclick="closeOv('ov-price')">
+            Kanselahin
+          </button>
+          <button class="btn btn-primary" onclick="savePriceItem()">
+            💾 I-save
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW USER DATA -->
+    <div class="overlay hidden" id="ov-user-data">
+      <div class="modal wide">
+        <div class="modal-hd">
+          <span class="modal-title" id="ud-title">Account Data</span
+          ><button class="mclose" onclick="closeOv('ov-user-data')">✕</button>
+        </div>
+        <div class="modal-bd" id="ud-body"></div>
+        <div class="modal-ft">
+          <button class="btn btn-ghost" onclick="closeOv('ov-user-data')">
+            Isara
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIRM -->
+    <div class="overlay hidden" id="ov-confirm">
+      <div class="confirm-box">
+        <h3 id="cf-title">Kumpirmahin</h3>
+        <p id="cf-msg"></p>
+        <div class="confirm-btns">
+          <button class="btn btn-ghost" onclick="closeOv('ov-confirm')">
+            Kanselahin
+          </button>
+          <button class="btn btn-danger" id="cf-yes">Oo, ituloy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="shared.js"></script>
+    <script>
+      /* ── LOGIN ───────────────────── */
+      function doLogin() {
+        const user = document.getElementById("l-user").value.trim();
+        const pw = document.getElementById("l-pw").value;
+        const err = document.getElementById("l-err");
+        if (user !== "admin") {
+          err.textContent = "Mali ang username.";
+          return;
+        }
+        if (pw !== Store.getAdminPw()) {
+          err.textContent = "Mali ang password.";
+          return;
+        }
+        err.textContent = "";
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("app-shell").classList.add("visible");
+        renderDashboard();
+        startClock();
+      }
+      document.getElementById("l-pw").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") doLogin();
+      });
+      function doLogout() {
+        document.getElementById("login-screen").style.display = "";
+        document.getElementById("app-shell").classList.remove("visible");
+        document.getElementById("l-pw").value = "";
+      }
+
+      /* ── SIDEBAR NAV ─────────────── */
+      let activePanel = "dashboard";
+      const panelTitles = {
+        dashboard: "Dashboard",
+        accounts: "Mga Account",
+        prices: "Pamamahala ng Presyo",
+        crops: "Rekord ng Tanaman",
+        settings: "Mga Setting",
+      };
+      document.querySelectorAll(".sb-item[data-panel]").forEach((item) => {
+        item.addEventListener("click", () => switchPanel(item.dataset.panel));
+      });
+      function switchPanel(id) {
+        activePanel = id;
+        document
+          .querySelectorAll(".sb-item")
+          .forEach((x) => x.classList.remove("active"));
+        document
+          .querySelector('.sb-item[data-panel="' + id + '"]')
+          ?.classList.add("active");
+        document
+          .querySelectorAll(".panel")
+          .forEach((x) => x.classList.remove("active"));
+        document.getElementById("panel-" + id).classList.add("active");
+        document.getElementById("page-title").textContent =
+          panelTitles[id] || id;
+        if (id === "dashboard") renderDashboard();
+        if (id === "accounts") renderAccounts();
+        if (id === "prices") renderAdminPrices();
+        if (id === "crops") renderAdminCrops();
+      }
+
+      /* ── CLOCK ───────────────────── */
+      function startClock() {
+        const el = document.getElementById("now-time");
+        function tick() {
+          el.textContent = new Date().toLocaleString("fil-PH", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+        tick();
+        setInterval(tick, 10000);
+      }
+
+      /* ── HELPER: get all crops across all accounts ── */
+      function getAllAccountsWithData() {
+        const accounts = Accounts.getAll();
+        return accounts.map((acc) => {
+          const crops = Store.getCrops(acc.id);
+          const expenses = Store.getExpenses(acc.id);
+          const totalKita = expenses
+            .filter((e) => e.type === "kita")
+            .reduce((s, e) => s + Number(e.amount), 0);
+          const totalGastos = expenses
+            .filter((e) => e.type === "gastos")
+            .reduce((s, e) => s + Number(e.amount), 0);
+          return {
+            ...acc,
+            crops,
+            expenses,
+            totalKita,
+            totalGastos,
+            net: totalKita - totalGastos,
+          };
+        });
+      }
+
+      function getAllCropsTagged() {
+        const accounts = Accounts.getAll();
+        const all = [];
+        accounts.forEach((acc) => {
+          const crops = Store.getCrops(acc.id);
+          crops.forEach((c) =>
+            all.push({ ...c, _username: acc.username, _userId: acc.id }),
+          );
+        });
+        return all;
+      }
+
+      /* ── DASHBOARD ───────────────── */
+      function renderDashboard() {
+        const accounts = Accounts.getAll();
+        const allCrops = getAllCropsTagged();
+        const prices = Store.getPrices();
+        document.getElementById("d-accounts").textContent = accounts.length;
+        document.getElementById("d-total").textContent = allCrops.length;
+        document.getElementById("d-harvest").textContent = allCrops.filter(
+          (c) => c.status === "Ready to Harvest",
+        ).length;
+        document.getElementById("d-prices").textContent = prices.length;
+
+        // Recent accounts
+        const recent = [...accounts]
+          .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))
+          .slice(0, 6);
+        const tb1 = document.getElementById("d-accounts-tb");
+        tb1.innerHTML = recent.length
+          ? recent
+              .map((acc) => {
+                const crops = Store.getCrops(acc.id);
+                return (
+                  "<tr><td><strong>" +
+                  escHtml(acc.username) +
+                  "</strong></td><td>" +
+                  crops.length +
+                  ' tanaman</td><td style="font-size:.78rem;color:var(--text3)">' +
+                  formatDateTime(acc.createdAt) +
+                  "</td></tr>"
+                );
+              })
+              .join("")
+          : '<tr><td colspan="3" class="empty">Walang account pa.</td></tr>';
+
+        // Due soon
+        const due = allCrops
+          .filter((c) => {
+            const d = daysUntil(c.harvestDate);
+            return c.status !== "Harvested" && d !== null && d >= 0 && d <= 7;
+          })
+          .sort((a, b) =>
+            (a.harvestDate || "").localeCompare(b.harvestDate || ""),
+          );
+        const tb2 = document.getElementById("d-due-tb");
+        tb2.innerHTML = due.length
+          ? due
+              .map((c) => {
+                const d = daysUntil(c.harvestDate);
+                return (
+                  "<tr><td><strong>" +
+                  escHtml(c.name) +
+                  '</strong></td><td style="font-size:.78rem">' +
+                  escHtml(c._username) +
+                  '</td><td style="color:' +
+                  (d === 0 ? "var(--red)" : "var(--gold)") +
+                  ';font-weight:700">' +
+                  (d === 0 ? "Ngayon!" : d + " araw na lang") +
+                  "</td></tr>"
+                );
+              })
+              .join("")
+          : '<tr><td colspan="3" class="empty">Walang mag-aani sa loob ng 7 araw.</td></tr>';
+      }
+
+      /* ── ACCOUNTS PANEL ──────────── */
+      function renderAccounts() {
+        const q = (
+          document.getElementById("acct-search")?.value || ""
+        ).toLowerCase();
+        const accountsData = getAllAccountsWithData().filter(
+          (a) => !q || a.username.toLowerCase().includes(q),
+        );
+        const body = document.getElementById("accounts-list-body");
+        if (!accountsData.length) {
+          body.innerHTML =
+            '<div class="empty"><div class="empty-ico">👥</div><p>Walang account na nahanap.</p></div>';
+          return;
+        }
+        body.innerHTML = accountsData
+          .map((acc) => {
+            const initials = acc.username.slice(0, 2).toUpperCase();
+            const activeCrops = acc.crops.filter(
+              (c) => c.status !== "Harvested",
+            ).length;
+            const harvestedCrops = acc.crops.filter(
+              (c) => c.status === "Harvested",
+            ).length;
+            return (
+              '<div class="acct-card">' +
+              '<div class="acct-avatar">' +
+              escHtml(initials) +
+              "</div>" +
+              '<div class="acct-info">' +
+              '<div class="acct-name">' +
+              escHtml(acc.username) +
+              "</div>" +
+              '<div class="acct-meta">' +
+              "<span>📅 Nag-register: " +
+              formatDateTime(acc.createdAt) +
+              "</span>" +
+              "<span>🕐 Huling login: " +
+              (acc.lastLogin ? formatDateTime(acc.lastLogin) : "Wala pa") +
+              "</span>" +
+              "</div>" +
+              '<div class="acct-stats">' +
+              '<span class="acct-stat">🌱 ' +
+              acc.crops.length +
+              " tanaman</span>" +
+              (activeCrops
+                ? '<span class="acct-stat">🌿 ' + activeCrops + " aktibo</span>"
+                : "") +
+              (harvestedCrops
+                ? '<span class="acct-stat">✅ ' +
+                  harvestedCrops +
+                  " na-ani</span>"
+                : "") +
+              (acc.totalKita > 0
+                ? '<span class="acct-stat">💰 ₱' +
+                  acc.totalKita.toLocaleString("en-PH", {
+                    maximumFractionDigits: 0,
+                  }) +
+                  "</span>"
+                : "") +
+              "</div></div>" +
+              '<div class="acct-actions">' +
+              '<button class="btn btn-sm btn-info" onclick="openUserData(\'' +
+              acc.id +
+              "')\">👁️ Data</button>" +
+              '<button class="btn btn-sm btn-danger" onclick="confirmDeleteAccount(\'' +
+              acc.id +
+              "','" +
+              escHtml(acc.username) +
+              "')\">🗑️</button>" +
+              "</div></div>"
+            );
+          })
+          .join("");
+      }
+
+      /* ── VIEW USER DATA ──────────── */
+      function openUserData(userId) {
+        const acc = Accounts.findById(userId);
+        if (!acc) return;
+        const crops = Store.getCrops(userId);
+        const expenses = Store.getExpenses(userId);
+        document.getElementById("ud-title").textContent =
+          "👤 Data ni " + acc.username;
+
+        const statusBadge = {
+          Planted: "b-planted",
+          Growing: "b-growing",
+          "Ready to Harvest": "b-ready",
+          Harvested: "b-harvested",
+        };
+        const statusLbl = {
+          Planted: "🌱 Nagtanim",
+          Growing: "🌿 Lumalaki",
+          "Ready to Harvest": "🌾 Handa na",
+          Harvested: "✅ Na-ani",
+        };
+
+        const totalKita = expenses
+          .filter((e) => e.type === "kita")
+          .reduce((s, e) => s + Number(e.amount), 0);
+        const totalGastos = expenses
+          .filter((e) => e.type === "gastos")
+          .reduce((s, e) => s + Number(e.amount), 0);
+        const net = totalKita - totalGastos;
+
+        let html =
+          '<div class="user-data-section">' +
+          "<h4>📋 Impormasyon ng Account</h4>" +
+          '<div class="detail-row"><span class="detail-label">Username</span><span class="detail-val"><strong>' +
+          escHtml(acc.username) +
+          "</strong></span></div>" +
+          '<div class="detail-row"><span class="detail-label">Nag-register</span><span class="detail-val">' +
+          formatDateTime(acc.createdAt) +
+          "</span></div>" +
+          '<div class="detail-row"><span class="detail-label">Huling Login</span><span class="detail-val">' +
+          (acc.lastLogin ? formatDateTime(acc.lastLogin) : "Hindi pa") +
+          "</span></div>" +
+          '<div class="detail-row"><span class="detail-label">Bilang ng Tanaman</span><span class="detail-val">' +
+          crops.length +
+          "</span></div>" +
+          '<div class="detail-row"><span class="detail-label">Kabuuang Kita</span><span class="detail-val" style="color:#2e7d32;font-weight:700">₱' +
+          totalKita.toLocaleString("en-PH", { maximumFractionDigits: 0 }) +
+          "</span></div>" +
+          '<div class="detail-row"><span class="detail-label">Kabuuang Gastos</span><span class="detail-val" style="color:var(--red);font-weight:700">₱' +
+          totalGastos.toLocaleString("en-PH", { maximumFractionDigits: 0 }) +
+          "</span></div>" +
+          '<div class="detail-row"><span class="detail-label">Net Kita</span><span class="detail-val" style="color:' +
+          (net >= 0 ? "#2e7d32" : "var(--red)") +
+          ';font-weight:700">' +
+          (net >= 0 ? "+" : "") +
+          "₱" +
+          net.toLocaleString("en-PH", { maximumFractionDigits: 0 }) +
+          "</span></div>" +
+          "</div>";
+
+        html += '<div class="user-data-section"><h4>🌱 Mga Tanaman</h4>';
+        if (!crops.length) {
+          html += '<div class="no-data">Walang tanaman pa.</div>';
+        } else {
+          html +=
+            '<div style="overflow-x:auto"><table><thead><tr><th>Pangalan</th><th>Katayuan</th><th>Petsa ng Tanim</th><th>Inaasahang Ani</th><th>Dami</th><th>Mga Tala</th></tr></thead><tbody>' +
+            crops
+              .map((c) => {
+                const cropExp = expenses.filter((e) => e.cropId === c.id);
+                const cKita = cropExp
+                  .filter((e) => e.type === "kita")
+                  .reduce((s, e) => s + Number(e.amount), 0);
+                const cGastos = cropExp
+                  .filter((e) => e.type === "gastos")
+                  .reduce((s, e) => s + Number(e.amount), 0);
+                const cNet = cKita - cGastos;
+                const hasFinancial = cropExp.length > 0;
+                return (
+                  "<tr>" +
+                  "<td><strong>" +
+                  escHtml(c.name) +
+                  "</strong>" +
+                  (hasFinancial
+                    ? '<br><span style="font-size:.68rem;color:var(--text3)">Net: ' +
+                      (cNet >= 0 ? "+" : "") +
+                      "₱" +
+                      cNet.toLocaleString("en-PH", {
+                        maximumFractionDigits: 0,
+                      }) +
+                      "</span>"
+                    : "") +
+                  "</td>" +
+                  '<td><span class="badge ' +
+                  (statusBadge[c.status] || "") +
+                  '">' +
+                  (statusLbl[c.status] || c.status) +
+                  "</span></td>" +
+                  '<td style="font-size:.78rem">' +
+                  formatDate(c.plantDate) +
+                  "</td>" +
+                  '<td style="font-size:.78rem">' +
+                  formatDate(c.harvestDate) +
+                  "</td>" +
+                  '<td style="font-size:.78rem">' +
+                  (c.yield ? c.yield + " " + c.unit : "—") +
+                  "</td>" +
+                  '<td style="font-size:.75rem;color:var(--text3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' +
+                  escHtml(c.notes || "") +
+                  '">' +
+                  escHtml(c.notes || "—") +
+                  "</td>" +
+                  "</tr>"
+                );
+              })
+              .join("") +
+            "</tbody></table></div>";
+        }
+        html += "</div>";
+
+        if (expenses.length) {
+          html +=
+            '<div class="user-data-section"><h4>💸 Mga Gastos / Kita</h4><div style="overflow-x:auto"><table><thead><tr><th>Uri</th><th>Halaga</th><th>Paliwanag</th><th>Petsa</th></tr></thead><tbody>' +
+            expenses
+              .slice()
+              .sort((a, b) => b.date.localeCompare(a.date))
+              .slice(0, 20)
+              .map(
+                (e) =>
+                  "<tr><td>" +
+                  (e.type === "kita" ? "💰 Kita" : "💸 Gastos") +
+                  "</td>" +
+                  '<td style="font-weight:700;color:' +
+                  (e.type === "kita" ? "#2e7d32" : "var(--red)") +
+                  '">₱' +
+                  Number(e.amount).toLocaleString("en-PH", {
+                    minimumFractionDigits: 2,
+                  }) +
+                  "</td>" +
+                  '<td style="font-size:.82rem">' +
+                  escHtml(e.label || "—") +
+                  "</td>" +
+                  '<td style="font-size:.78rem">' +
+                  formatDate(e.date) +
+                  "</td></tr>",
+              )
+              .join("") +
+            "</tbody></table></div></div>";
+        }
+
+        document.getElementById("ud-body").innerHTML = html;
+        openOv("ov-user-data");
+      }
+
+      /* ── DELETE ACCOUNT ──────────── */
+      function confirmDeleteAccount(userId, username) {
+        showConfirm(
+          "Burahin ang Account",
+          'Sigurado kang burahin ang account ni "' +
+            username +
+            '"? Mabubura rin ang lahat ng kanyang datos.',
+          () => {
+            Accounts.deleteAccount(userId);
+            renderAccounts();
+            if (activePanel === "dashboard") renderDashboard();
+            toast("🗑️ Nabura na ang account ni " + username + ".");
+          },
+        );
+      }
+
+      /* ── PRICES ──────────────────── */
+      let pCat = "all";
+      document.querySelectorAll("#p-cat-chips .chip").forEach((ch) => {
+        ch.addEventListener("click", () => {
+          document
+            .querySelectorAll("#p-cat-chips .chip")
+            .forEach((x) => x.classList.remove("on"));
+          ch.classList.add("on");
+          pCat = ch.dataset.cat;
+          renderAdminPrices();
+        });
+      });
+
+      function renderAdminPrices() {
+        const prices = Store.getPrices();
+        const q = (
+          document.getElementById("p-search")?.value || ""
+        ).toLowerCase();
+        const filtered = prices.filter(
+          (p) =>
+            (pCat === "all" || p.category === pCat) &&
+            (!q || p.name.toLowerCase().includes(q)),
+        );
+        const tb = document.getElementById("prices-tb");
+        if (!filtered.length) {
+          tb.innerHTML =
+            '<tr><td colspan="6"><div class="empty"><div class="empty-ico">🔍</div>Walang nahanap.</div></td></tr>';
+          return;
+        }
+        const meta = CATEGORY_META;
+        tb.innerHTML = filtered
+          .map(
+            (p) =>
+              '<tr data-pid="' +
+              p.id +
+              '">' +
+              "<td><strong>" +
+              escHtml(p.name) +
+              "</strong></td>" +
+              "<td>" +
+              (meta[p.category]?.icon || "") +
+              " " +
+              escHtml(p.category) +
+              "</td>" +
+              "<td>" +
+              escHtml(p.unit) +
+              "</td>" +
+              '<td><input class="price-input" type="number" min="0" step="0.01" value="' +
+              Number(p.price).toFixed(2) +
+              '" data-pid="' +
+              p.id +
+              '" onchange="updatePriceField(\'' +
+              p.id +
+              "','price',this.value)\"/></td>" +
+              '<td><select class="trend-sel" onchange="updatePriceField(\'' +
+              p.id +
+              "','trend',this.value)\"><option value=\"same\" " +
+              (p.trend === "same" ? "selected" : "") +
+              '>—</option><option value="up" ' +
+              (p.trend === "up" ? "selected" : "") +
+              '>▲ Tumaas</option><option value="down" ' +
+              (p.trend === "down" ? "selected" : "") +
+              ">▼ Bumaba</option></select></td>" +
+              '<td><div class="row-actions"><button class="btn btn-sm btn-ghost" onclick="openEditPriceModal(\'' +
+              p.id +
+              '\')">✏️</button><button class="btn btn-sm btn-danger" onclick="deletePrice(\'' +
+              p.id +
+              "')\">🗑️</button></div></td>" +
+              "</tr>",
+          )
+          .join("");
+      }
+
+      const _priceEdits = {};
+      function updatePriceField(id, field, val) {
+        if (!_priceEdits[id]) _priceEdits[id] = {};
+        _priceEdits[id][field] = field === "price" ? parseFloat(val) || 0 : val;
+      }
+
+      function saveAllPrices() {
+        let prices = Store.getPrices();
+        for (const [id, edits] of Object.entries(_priceEdits)) {
+          const i = prices.findIndex((p) => p.id === id);
+          if (i > -1) prices[i] = { ...prices[i], ...edits };
+        }
+        Object.keys(_priceEdits).forEach((k) => delete _priceEdits[k]);
+        Store.savePrices(prices);
+        toast("✅ Nai-save na ang lahat ng presyo!");
+        renderAdminPrices();
+      }
+
+      function openAddPriceModal() {
+        document.getElementById("pm-title").textContent = "Bagong Presyo";
+        ["pm-id", "pm-name", "pm-price"].forEach(
+          (id) => (document.getElementById(id).value = ""),
+        );
+        document.getElementById("pm-cat").value = "Gulay";
+        document.getElementById("pm-unit").value = "kilo";
+        document.getElementById("pm-trend").value = "same";
+        openOv("ov-price");
+      }
+
+      function openEditPriceModal(id) {
+        const p = Store.getPrices().find((x) => x.id === id);
+        if (!p) return;
+        document.getElementById("pm-title").textContent = "I-edit ang Presyo";
+        document.getElementById("pm-id").value = id;
+        document.getElementById("pm-name").value = p.name;
+        document.getElementById("pm-cat").value = p.category;
+        document.getElementById("pm-price").value = Number(p.price).toFixed(2);
+        document.getElementById("pm-unit").value = p.unit;
+        document.getElementById("pm-trend").value = p.trend;
+        openOv("ov-price");
+      }
+
+      function savePriceItem() {
+        const id = document.getElementById("pm-id").value;
+        const name = document.getElementById("pm-name").value.trim();
+        const cat = document.getElementById("pm-cat").value;
+        const price = parseFloat(document.getElementById("pm-price").value);
+        const unit = document.getElementById("pm-unit").value.trim();
+        const trend = document.getElementById("pm-trend").value;
+        if (!name) {
+          toast("⚠️ Kailangan ang pangalan.");
+          return;
+        }
+        if (isNaN(price) || price < 0) {
+          toast("⚠️ Kailangan ng wastong presyo.");
+          return;
+        }
+        if (!unit) {
+          toast("⚠️ Kailangan ang yunit.");
+          return;
+        }
+        let prices = Store.getPrices();
+        if (id) {
+          const i = prices.findIndex((p) => p.id === id);
+          if (i > -1)
+            prices[i] = {
+              ...prices[i],
+              name,
+              category: cat,
+              price,
+              unit,
+              trend,
+            };
+        } else {
+          prices.push({
+            id: "p" + genId(),
+            category: cat,
+            name,
+            unit,
+            price,
+            trend,
+          });
+        }
+        Store.savePrices(prices);
+        closeOv("ov-price");
+        renderAdminPrices();
+        toast(
+          id ? "✅ Na-update ang presyo!" : "✅ Naidagdag ang bagong presyo!",
+        );
+      }
+
+      function deletePrice(id) {
+        showConfirm(
+          "Burahin ang Presyo",
+          "Sigurado kang burahin ang presyong ito?",
+          () => {
+            Store.savePrices(Store.getPrices().filter((p) => p.id !== id));
+            renderAdminPrices();
+            toast("🗑️ Nabura ang presyo.");
+          },
+        );
+      }
+
+      /* ── CROPS (ALL ACCOUNTS) ────── */
+      let cFilter = "all";
+      document.querySelectorAll("#c-filter-chips .chip").forEach((ch) => {
+        ch.addEventListener("click", () => {
+          document
+            .querySelectorAll("#c-filter-chips .chip")
+            .forEach((x) => x.classList.remove("on"));
+          ch.classList.add("on");
+          cFilter = ch.dataset.cf;
+          renderAdminCrops();
+        });
+      });
+
+      function renderAdminCrops() {
+        const q = (
+          document.getElementById("c-search")?.value || ""
+        ).toLowerCase();
+        const crops = getAllCropsTagged().filter(
+          (c) =>
+            (cFilter === "all" || c.status === cFilter) &&
+            (!q ||
+              c.name.toLowerCase().includes(q) ||
+              c._username.toLowerCase().includes(q)),
+        );
+        const statusBadge = {
+          Planted: "b-planted",
+          Growing: "b-growing",
+          "Ready to Harvest": "b-ready",
+          Harvested: "b-harvested",
+        };
+        const statusLbl = {
+          Planted: "🌱 Nagtanim",
+          Growing: "🌿 Lumalaki",
+          "Ready to Harvest": "🌾 Handa na",
+          Harvested: "✅ Na-ani",
+        };
+        const tb = document.getElementById("crops-tb");
+        if (!crops.length) {
+          tb.innerHTML =
+            '<tr><td colspan="6"><div class="empty"><div class="empty-ico">🌿</div>Walang tanaman.</div></td></tr>';
+          return;
+        }
+        tb.innerHTML = crops
+          .map((c) => {
+            const d =
+              c.status === "Harvested"
+                ? "—"
+                : (() => {
+                    const n = daysUntil(c.harvestDate);
+                    if (n === null) return "—";
+                    if (n < 0)
+                      return (
+                        '<span style="color:var(--red)">' +
+                        Math.abs(n) +
+                        "d nakalipas</span>"
+                      );
+                    if (n === 0)
+                      return '<span style="color:var(--red);font-weight:700">Ngayon!</span>';
+                    if (n <= 7)
+                      return (
+                        '<span style="color:var(--gold);font-weight:600">' +
+                        n +
+                        " araw</span>"
+                      );
+                    return n + " araw";
+                  })();
+            return (
+              "<tr>" +
+              "<td><strong>" +
+              escHtml(c.name) +
+              "</strong></td>" +
+              '<td><span style="background:var(--pale);border-radius:20px;padding:.1rem .55rem;font-size:.72rem;font-weight:700;color:var(--green)">' +
+              escHtml(c._username) +
+              "</span></td>" +
+              '<td><span class="badge ' +
+              (statusBadge[c.status] || "") +
+              '">' +
+              (statusLbl[c.status] || c.status) +
+              "</span></td>" +
+              '<td style="font-size:.78rem">' +
+              formatDate(c.plantDate) +
+              "</td>" +
+              '<td style="font-size:.78rem">' +
+              formatDate(c.harvestDate) +
+              "</td>" +
+              "<td>" +
+              d +
+              "</td>" +
+              "</tr>"
+            );
+          })
+          .join("");
+      }
+
+      /* ── SETTINGS ────────────────── */
+      function changePw() {
+        const cur = document.getElementById("s-cur-pw").value;
+        const nw = document.getElementById("s-new-pw").value;
+        const rep = document.getElementById("s-rep-pw").value;
+        const msg = document.getElementById("pw-msg");
+        if (cur !== Store.getAdminPw()) {
+          msg.style.color = "var(--red)";
+          msg.textContent = "Mali ang kasalukuyang password.";
+          return;
+        }
+        if (nw.length < 6) {
+          msg.style.color = "var(--red)";
+          msg.textContent = "Kailangan ng 6+ karakter ang bagong password.";
+          return;
+        }
+        if (nw !== rep) {
+          msg.style.color = "var(--red)";
+          msg.textContent = "Hindi magkatugma ang mga password.";
+          return;
+        }
+        Store.setAdminPw(nw);
+        ["s-cur-pw", "s-new-pw", "s-rep-pw"].forEach(
+          (id) => (document.getElementById(id).value = ""),
+        );
+        msg.style.color = "var(--green)";
+        msg.textContent = "✅ Na-update na ang password!";
+        setTimeout(() => (msg.textContent = ""), 3000);
+      }
+
+      function exportData() {
+        const accounts = Accounts.getAll();
+        const data = {
+          exportedAt: new Date().toISOString(),
+          prices: Store.getPrices(),
+          accounts: accounts.map((a) => ({
+            ...a,
+            crops: Store.getCrops(a.id),
+            expenses: Store.getExpenses(a.id),
+          })),
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download =
+          "bugandayari-backup-" +
+          new Date().toISOString().slice(0, 10) +
+          ".json";
+        a.click();
+        URL.revokeObjectURL(url);
+        toast("✅ Na-export na ang data!");
+      }
+
+      function importData(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (data.prices) Store.savePrices(data.prices);
+            if (data.accounts) {
+              data.accounts.forEach((a) => {
+                const acc = {
+                  id: a.id,
+                  username: a.username,
+                  password: a.password,
+                  createdAt: a.createdAt,
+                  lastLogin: a.lastLogin,
+                };
+                const existing = Accounts.getAll();
+                if (!existing.find((x) => x.id === a.id)) {
+                  existing.push(acc);
+                  Accounts.save(existing);
+                }
+                if (a.crops) Store.saveCrops(a.crops, a.id);
+                if (a.expenses) Store.saveExpenses(a.expenses, a.id);
+              });
+            }
+            toast("✅ Na-import na ang data!");
+            renderDashboard();
+          } catch {
+            toast("❌ Hindi ma-parse ang file. Siguraduhing tama ang JSON.");
+          }
+          e.target.value = "";
+        };
+        reader.readAsText(file);
+      }
+
+      function confirmResetPrices() {
+        showConfirm(
+          "I-reset ang Presyo",
+          "Ibabalik ang lahat ng presyo sa mga default na halaga. Mawawala ang lahat ng mga pagbabago.",
+          () => {
+            localStorage.removeItem("bdyari_prices");
+            localStorage.removeItem("bdyari_prices_updated");
+            toast("✅ Na-reset na ang mga presyo!");
+            if (activePanel === "prices") renderAdminPrices();
+          },
+        );
+      }
+
+      function confirmClearAllCrops() {
+        showConfirm(
+          "Burahin ang Lahat ng Tanaman",
+          "BABALA: Permanently na mabubura ang lahat ng rekord ng tanaman ng lahat ng users. Hindi na maibabalik.",
+          () => {
+            Accounts.getAll().forEach((acc) => {
+              Store.saveCrops([], acc.id);
+              Store.saveExpenses([], acc.id);
+            });
+            toast("🗑️ Nabura na ang lahat ng tanaman.");
+            if (activePanel === "crops") renderAdminCrops();
+            if (activePanel === "dashboard") renderDashboard();
+          },
+        );
+      }
+
+      /* ── MODAL HELPERS ───────────── */
+      function openOv(id) {
+        document.getElementById(id).classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      }
+      function closeOv(id) {
+        document.getElementById(id).classList.add("hidden");
+        if (!document.querySelector(".overlay:not(.hidden)"))
+          document.body.style.overflow = "";
+      }
+      document.querySelectorAll(".overlay").forEach((ov) => {
+        ov.addEventListener("click", (e) => {
+          if (e.target === ov) closeOv(ov.id);
+        });
+      });
+
+      function showConfirm(title, msg, onYes) {
+        document.getElementById("cf-title").textContent = title;
+        document.getElementById("cf-msg").textContent = msg;
+        document.getElementById("cf-yes").onclick = () => {
+          closeOv("ov-confirm");
+          onYes();
+        };
+        openOv("ov-confirm");
+      }
+
+      /* ── TOAST ───────────────────── */
+      let _tt;
+      function toast(msg) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(_tt);
+        _tt = setTimeout(() => el.classList.remove("show"), 3200);
+      }
+    </script>
+  </body>
+</html>

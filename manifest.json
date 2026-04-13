@@ -1,0 +1,36 @@
+{
+  "name": "Bugandayari",
+  "short_name": "Bugandayari",
+  "description": "Rekord ng tanaman at presyo ng palengke para sa mga magsasaka sa Iloilo.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f0e8",
+  "theme_color": "#1c3a1c",
+  "orientation": "portrait-primary",
+  "lang": "fil",
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Magdagdag ng Tanaman",
+      "short_name": "Magdagdag",
+      "description": "Direktang magdagdag ng bagong tanaman",
+      "url": "./index.html#crops",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

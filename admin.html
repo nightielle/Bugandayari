@@ -17,7 +17,7 @@
     <!-- LOGIN -->
     <div id="login-screen">
       <div class="login-box">
-        <div class="login-logo">🌾 Bugandayari</div>
+        <div class="login-logo"> Bugandayari</div>
         <div class="login-sub">Farm Management System</div>
         <div class="login-badge">Admin Portal</div>
         <div class="login-field">
@@ -50,7 +50,7 @@
       <!-- SIDEBAR -->
       <nav class="sidebar">
         <div class="sb-brand">
-          <div class="sb-logo">🌾 Bugandayari</div>
+          <div class="sb-logo"> Bugandayari</div>
           <div class="sb-badge">Admin</div>
         </div>
         <div class="sb-nav">
@@ -499,8 +499,34 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="shared.js"></script>
     <script>
+      /* ── ACCOUNTS.GETALL (missing from shared.js — added here) ── */
+      Accounts.getAll = async function () {
+        const { data, error } = await db
+          .from("accounts")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (error) { console.error("[Supabase] Accounts.getAll:", error?.message); return []; }
+        return data || [];
+      };
+
+      /* ── DEFAULT PRICES (fallback for reset) ── */
+      const DEFAULT_PRICES = [
+        { id: "p_bigas1",  name: "Bigas (Regular)",   category: "Bigas",  unit: "kilo",   price: 45,  trend: "same" },
+        { id: "p_bigas2",  name: "Bigas (Sinandomeng)",category: "Bigas",  unit: "kilo",   price: 55,  trend: "same" },
+        { id: "p_mais1",   name: "Mais (Dilaw)",       category: "Mais",   unit: "kilo",   price: 22,  trend: "same" },
+        { id: "p_gulay1",  name: "Kamatis",            category: "Gulay",  unit: "kilo",   price: 80,  trend: "up"   },
+        { id: "p_gulay2",  name: "Sibuyas",            category: "Gulay",  unit: "kilo",   price: 120, trend: "up"   },
+        { id: "p_gulay3",  name: "Bawang",             category: "Gulay",  unit: "kilo",   price: 200, trend: "same" },
+        { id: "p_gulay4",  name: "Ampalaya",           category: "Gulay",  unit: "kilo",   price: 60,  trend: "same" },
+        { id: "p_prutas1", name: "Saging (Lakatan)",   category: "Prutas", unit: "kilo",   price: 50,  trend: "same" },
+        { id: "p_prutas2", name: "Mangga",             category: "Prutas", unit: "kilo",   price: 90,  trend: "up"   },
+        { id: "p_ugat1",   name: "Kamote",             category: "Ugat",   unit: "kilo",   price: 35,  trend: "same" },
+        { id: "p_ugat2",   name: "Gabi",               category: "Ugat",   unit: "kilo",   price: 40,  trend: "same" },
+      ];
+
       /* ── LOGIN ───────────────────── */
       function doLogin() {
         const user = document.getElementById("l-user").value.trim();
@@ -578,45 +604,48 @@
       }
 
       /* ── HELPER: get all crops across all accounts ── */
-      function getAllAccountsWithData() {
-        const accounts = Accounts.getAll();
-        return accounts.map((acc) => {
-          const crops = Store.getCrops(acc.id);
-          const expenses = Store.getExpenses(acc.id);
+      async function getAllAccountsWithData() {
+        const accounts = await Accounts.getAll();
+        const result = [];
+        for (const acc of accounts) {
+          const crops = await Store.getCrops(acc.id);
+          const expenses = await Store.getExpenses(acc.id);
           const totalKita = expenses
             .filter((e) => e.type === "kita")
             .reduce((s, e) => s + Number(e.amount), 0);
           const totalGastos = expenses
             .filter((e) => e.type === "gastos")
             .reduce((s, e) => s + Number(e.amount), 0);
-          return {
+          result.push({
             ...acc,
             crops,
             expenses,
             totalKita,
             totalGastos,
             net: totalKita - totalGastos,
-          };
-        });
+          });
+        }
+        return result;
       }
 
-      function getAllCropsTagged() {
-        const accounts = Accounts.getAll();
+      async function getAllCropsTagged() {
+        const accounts = await Accounts.getAll();
         const all = [];
-        accounts.forEach((acc) => {
-          const crops = Store.getCrops(acc.id);
+        for (const acc of accounts) {
+          const crops = await Store.getCrops(acc.id);
           crops.forEach((c) =>
             all.push({ ...c, _username: acc.username, _userId: acc.id }),
           );
-        });
+        }
         return all;
       }
 
       /* ── DASHBOARD ───────────────── */
-      function renderDashboard() {
-        const accounts = Accounts.getAll();
-        const allCrops = getAllCropsTagged();
-        const prices = Store.getPrices();
+      async function renderDashboard() {
+        const accountsData = await getAllAccountsWithData();
+        const accounts = accountsData;
+        const allCrops = await getAllCropsTagged();
+        const prices = await Store.getPrices();
         document.getElementById("d-accounts").textContent = accounts.length;
         document.getElementById("d-total").textContent = allCrops.length;
         document.getElementById("d-harvest").textContent = allCrops.filter(
@@ -629,17 +658,20 @@
           .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))
           .slice(0, 6);
         const tb1 = document.getElementById("d-accounts-tb");
+        // Build crops count map from already-fetched accountsData
+        const cropCountMap = {};
+        for (const a of accountsData) cropCountMap[a.id] = a.crops.length;
         tb1.innerHTML = recent.length
           ? recent
               .map((acc) => {
-                const crops = Store.getCrops(acc.id);
+                const cropCount = cropCountMap[acc.id] || 0;
                 return (
                   "<tr><td><strong>" +
                   escHtml(acc.username) +
                   "</strong></td><td>" +
-                  crops.length +
+                  cropCount +
                   ' tanaman</td><td style="font-size:.78rem;color:var(--text3)">' +
-                  formatDateTime(acc.createdAt) +
+                  formatDateTime(acc.created_at) +
                   "</td></tr>"
                 );
               })
@@ -649,7 +681,7 @@
         // Due soon
         const due = allCrops
           .filter((c) => {
-            const d = daysUntil(c.harvestDate);
+            const d = daysUntil(c.harvest_at);
             return c.status !== "Harvested" && d !== null && d >= 0 && d <= 7;
           })
           .sort((a, b) =>
@@ -659,7 +691,7 @@
         tb2.innerHTML = due.length
           ? due
               .map((c) => {
-                const d = daysUntil(c.harvestDate);
+                const d = daysUntil(c.harvest_at);
                 return (
                   "<tr><td><strong>" +
                   escHtml(c.name) +
@@ -677,11 +709,12 @@
       }
 
       /* ── ACCOUNTS PANEL ──────────── */
-      function renderAccounts() {
+      async function renderAccounts() {
         const q = (
           document.getElementById("acct-search")?.value || ""
         ).toLowerCase();
-        const accountsData = getAllAccountsWithData().filter(
+        const all = await getAllAccountsWithData();
+        const accountsData = all.filter(
           (a) => !q || a.username.toLowerCase().includes(q),
         );
         const body = document.getElementById("accounts-list-body");
@@ -710,10 +743,10 @@
               "</div>" +
               '<div class="acct-meta">' +
               "<span>📅 Nag-register: " +
-              formatDateTime(acc.createdAt) +
+              formatDateTime(acc.created_at) +
               "</span>" +
               "<span>🕐 Huling login: " +
-              (acc.lastLogin ? formatDateTime(acc.lastLogin) : "Wala pa") +
+              (acc.last_login ? formatDateTime(acc.last_login) : "Wala pa") +
               "</span>" +
               "</div>" +
               '<div class="acct-stats">' +
@@ -752,11 +785,11 @@
       }
 
       /* ── VIEW USER DATA ──────────── */
-      function openUserData(userId) {
-        const acc = Accounts.findById(userId);
+      async function openUserData(userId) {
+        const acc = await Accounts.findById(userId);
         if (!acc) return;
-        const crops = Store.getCrops(userId);
-        const expenses = Store.getExpenses(userId);
+        const crops = await Store.getCrops(userId);
+        const expenses = await Store.getExpenses(userId);
         document.getElementById("ud-title").textContent =
           "👤 Data ni " + acc.username;
 
@@ -788,10 +821,10 @@
           escHtml(acc.username) +
           "</strong></span></div>" +
           '<div class="detail-row"><span class="detail-label">Nag-register</span><span class="detail-val">' +
-          formatDateTime(acc.createdAt) +
+          formatDateTime(acc.created_at) +
           "</span></div>" +
           '<div class="detail-row"><span class="detail-label">Huling Login</span><span class="detail-val">' +
-          (acc.lastLogin ? formatDateTime(acc.lastLogin) : "Hindi pa") +
+          (acc.last_login ? formatDateTime(acc.last_login) : "Hindi pa") +
           "</span></div>" +
           '<div class="detail-row"><span class="detail-label">Bilang ng Tanaman</span><span class="detail-val">' +
           crops.length +
@@ -819,7 +852,7 @@
             '<div style="overflow-x:auto"><table><thead><tr><th>Pangalan</th><th>Katayuan</th><th>Petsa ng Tanim</th><th>Inaasahang Ani</th><th>Dami</th><th>Mga Tala</th></tr></thead><tbody>' +
             crops
               .map((c) => {
-                const cropExp = expenses.filter((e) => e.cropId === c.id);
+                const cropExp = expenses.filter((e) => e.crop_id === c.id);
                 const cKita = cropExp
                   .filter((e) => e.type === "kita")
                   .reduce((s, e) => s + Number(e.amount), 0);
@@ -849,10 +882,10 @@
                   (statusLbl[c.status] || c.status) +
                   "</span></td>" +
                   '<td style="font-size:.78rem">' +
-                  formatDate(c.plantDate) +
+                  formatDate(c.planted_at) +
                   "</td>" +
                   '<td style="font-size:.78rem">' +
-                  formatDate(c.harvestDate) +
+                  formatDate(c.harvest_at) +
                   "</td>" +
                   '<td style="font-size:.78rem">' +
                   (c.yield ? c.yield + " " + c.unit : "—") +
@@ -905,14 +938,14 @@
       }
 
       /* ── DELETE ACCOUNT ──────────── */
-      function confirmDeleteAccount(userId, username) {
+      async function confirmDeleteAccount(userId, username) {
         showConfirm(
           "Burahin ang Account",
           'Sigurado kang burahin ang account ni "' +
             username +
             '"? Mabubura rin ang lahat ng kanyang datos.',
-          () => {
-            Accounts.deleteAccount(userId);
+          async () => {
+    await Accounts.deleteAccount(userId);
             renderAccounts();
             if (activePanel === "dashboard") renderDashboard();
             toast("🗑️ Nabura na ang account ni " + username + ".");
@@ -933,8 +966,8 @@
         });
       });
 
-      function renderAdminPrices() {
-        const prices = Store.getPrices();
+      async function renderAdminPrices() {
+        const prices = await Store.getPrices();
         const q = (
           document.getElementById("p-search")?.value || ""
         ).toLowerCase();
@@ -999,14 +1032,15 @@
         _priceEdits[id][field] = field === "price" ? parseFloat(val) || 0 : val;
       }
 
-      function saveAllPrices() {
-        let prices = Store.getPrices();
+      async function saveAllPrices() {
+        const prices = await Store.getPrices();
+        const toUpsert = [];
         for (const [id, edits] of Object.entries(_priceEdits)) {
-          const i = prices.findIndex((p) => p.id === id);
-          if (i > -1) prices[i] = { ...prices[i], ...edits };
+          const base = prices.find((p) => p.id === id);
+          if (base) toUpsert.push({ ...base, ...edits });
         }
+        if (toUpsert.length) await Store.savePrices(toUpsert);
         Object.keys(_priceEdits).forEach((k) => delete _priceEdits[k]);
-        Store.savePrices(prices);
         toast("✅ Nai-save na ang lahat ng presyo!");
         renderAdminPrices();
       }
@@ -1022,8 +1056,9 @@
         openOv("ov-price");
       }
 
-      function openEditPriceModal(id) {
-        const p = Store.getPrices().find((x) => x.id === id);
+      async function openEditPriceModal(id) {
+        const prices = await Store.getPrices();
+        const p = prices.find((x) => x.id === id);
         if (!p) return;
         document.getElementById("pm-title").textContent = "I-edit ang Presyo";
         document.getElementById("pm-id").value = id;
@@ -1035,7 +1070,7 @@
         openOv("ov-price");
       }
 
-      function savePriceItem() {
+      async function savePriceItem() {
         const id = document.getElementById("pm-id").value;
         const name = document.getElementById("pm-name").value.trim();
         const cat = document.getElementById("pm-cat").value;
@@ -1054,29 +1089,10 @@
           toast("⚠️ Kailangan ang yunit.");
           return;
         }
-        let prices = Store.getPrices();
-        if (id) {
-          const i = prices.findIndex((p) => p.id === id);
-          if (i > -1)
-            prices[i] = {
-              ...prices[i],
-              name,
-              category: cat,
-              price,
-              unit,
-              trend,
-            };
-        } else {
-          prices.push({
-            id: "p" + genId(),
-            category: cat,
-            name,
-            unit,
-            price,
-            trend,
-          });
-        }
-        Store.savePrices(prices);
+        const priceItem = id
+          ? { id, name, category: cat, price, unit, trend }
+          : { id: "p" + genId(), name, category: cat, price, unit, trend };
+        await Store.savePrice(priceItem);
         closeOv("ov-price");
         renderAdminPrices();
         toast(
@@ -1084,12 +1100,13 @@
         );
       }
 
-      function deletePrice(id) {
+      async function deletePrice(id) {
         showConfirm(
           "Burahin ang Presyo",
           "Sigurado kang burahin ang presyong ito?",
-          () => {
-            Store.savePrices(Store.getPrices().filter((p) => p.id !== id));
+          async () => {
+    const allPrices = await Store.getPrices();
+await Store.deletePrice(id);
             renderAdminPrices();
             toast("🗑️ Nabura ang presyo.");
           },
@@ -1109,11 +1126,12 @@
         });
       });
 
-      function renderAdminCrops() {
+      async function renderAdminCrops() {
         const q = (
           document.getElementById("c-search")?.value || ""
         ).toLowerCase();
-        const crops = getAllCropsTagged().filter(
+        const allCrops = await getAllCropsTagged();
+        const crops = allCrops.filter(
           (c) =>
             (cFilter === "all" || c.status === cFilter) &&
             (!q ||
@@ -1144,7 +1162,7 @@
               c.status === "Harvested"
                 ? "—"
                 : (() => {
-                    const n = daysUntil(c.harvestDate);
+                    const n = daysUntil(c.harvest_at);
                     if (n === null) return "—";
                     if (n < 0)
                       return (
@@ -1176,10 +1194,10 @@
               (statusLbl[c.status] || c.status) +
               "</span></td>" +
               '<td style="font-size:.78rem">' +
-              formatDate(c.plantDate) +
+              formatDate(c.planted_at) +
               "</td>" +
               '<td style="font-size:.78rem">' +
-              formatDate(c.harvestDate) +
+              formatDate(c.harvest_at) +
               "</td>" +
               "<td>" +
               d +
@@ -1220,16 +1238,20 @@
         setTimeout(() => (msg.textContent = ""), 3000);
       }
 
-      function exportData() {
-        const accounts = Accounts.getAll();
+      async function exportData() {
+        const accounts = await Accounts.getAll();
+        const accountsWithData = [];
+        for (const a of accounts) {
+          accountsWithData.push({
+            ...a,
+            crops: await Store.getCrops(a.id),
+            expenses: await Store.getExpenses(a.id),
+          });
+        }
         const data = {
           exportedAt: new Date().toISOString(),
-          prices: Store.getPrices(),
-          accounts: accounts.map((a) => ({
-            ...a,
-            crops: Store.getCrops(a.id),
-            expenses: Store.getExpenses(a.id),
-          })),
+          prices: await Store.getPrices(),
+          accounts: accountsWithData,
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], {
           type: "application/json",
@@ -1246,35 +1268,44 @@
         toast("✅ Na-export na ang data!");
       }
 
-      function importData(e) {
+      async function importData(e) {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = (ev) => {
+        reader.onload = async (ev) => {
           try {
             const data = JSON.parse(ev.target.result);
-            if (data.prices) Store.savePrices(data.prices);
+            if (data.prices) await Store.savePrices(data.prices);
             if (data.accounts) {
-              data.accounts.forEach((a) => {
-                const acc = {
-                  id: a.id,
-                  username: a.username,
-                  password: a.password,
-                  createdAt: a.createdAt,
-                  lastLogin: a.lastLogin,
-                };
-                const existing = Accounts.getAll();
+              const existing = await Accounts.getAll();
+              for (const a of data.accounts) {
                 if (!existing.find((x) => x.id === a.id)) {
-                  existing.push(acc);
-                  Accounts.save(existing);
+                  // Re-insert the account row directly via Supabase
+                  await db.from("accounts").upsert({
+                    id: a.id,
+                    username: a.username,
+                    password: a.password,
+                    created_at: a.created_at || a.createdAt || new Date().toISOString(),
+                    last_login: a.last_login || a.lastLogin || null,
+                  }, { onConflict: "id" });
                 }
-                if (a.crops) Store.saveCrops(a.crops, a.id);
-                if (a.expenses) Store.saveExpenses(a.expenses, a.id);
-              });
+                if (a.crops) {
+                  for (const crop of a.crops) {
+                    await Store.saveCrop({ ...crop }, a.id);
+                  }
+                }
+                if (a.expenses) {
+                  for (const exp of a.expenses) {
+                    // upsert expense — addExpense uses insert; use db directly to avoid duplicates
+                    await db.from("expenses").upsert({ ...exp, user_id: a.id }, { onConflict: "id" });
+                  }
+                }
+              }
             }
             toast("✅ Na-import na ang data!");
             renderDashboard();
-          } catch {
+          } catch (err) {
+            console.error("importData error:", err);
             toast("❌ Hindi ma-parse ang file. Siguraduhing tama ang JSON.");
           }
           e.target.value = "";
@@ -1282,12 +1313,12 @@
         reader.readAsText(file);
       }
 
-      function confirmResetPrices() {
+      async function confirmResetPrices() {
         showConfirm(
           "I-reset ang Presyo",
           "Ibabalik ang lahat ng presyo sa mga default na halaga. Mawawala ang lahat ng mga pagbabago.",
-          () => {
-            localStorage.removeItem("bdyari_prices");
+          async () => {
+            await Store.savePrices(DEFAULT_PRICES);
             localStorage.removeItem("bdyari_prices_updated");
             toast("✅ Na-reset na ang mga presyo!");
             if (activePanel === "prices") renderAdminPrices();
@@ -1295,21 +1326,23 @@
         );
       }
 
-      function confirmClearAllCrops() {
-        showConfirm(
-          "Burahin ang Lahat ng Tanaman",
-          "BABALA: Permanently na mabubura ang lahat ng rekord ng tanaman ng lahat ng users. Hindi na maibabalik.",
-          () => {
-            Accounts.getAll().forEach((acc) => {
-              Store.saveCrops([], acc.id);
-              Store.saveExpenses([], acc.id);
-            });
-            toast("🗑️ Nabura na ang lahat ng tanaman.");
-            if (activePanel === "crops") renderAdminCrops();
-            if (activePanel === "dashboard") renderDashboard();
-          },
-        );
+
+async function confirmClearAllCrops() {
+  showConfirm(
+    "Burahin ang Lahat ng Tanaman",
+    "BABALA: Permanently na mabubura ang lahat ng rekord ng tanaman ng lahat ng users. Hindi na maibabalik.",
+    async () => {
+      const allAccs = await Accounts.getAll();
+      for (const acc of allAccs) {
+        await Store.clearCrops(acc.id);
+        await Store.clearExpenses(acc.id);
       }
+      toast("🗑️ Nabura na ang lahat ng tanaman.");
+      if (activePanel === "crops") renderAdminCrops();
+      if (activePanel === "dashboard") renderDashboard();
+    },
+  );
+}
 
       /* ── MODAL HELPERS ───────────── */
       function openOv(id) {

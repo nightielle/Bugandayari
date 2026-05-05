@@ -1,9 +1,11 @@
-const CACHE = "bugandayari-v2";
+const CACHE = "bugandayari-v3";
 const PRECACHE = [
   "./",
   "./index.html",
   "./admin.html",
-  "./shared.js",
+  "./styles/admin.css",
+  "./styles/index.css",
+  "./scripts/shared.js",
   "./manifest.json",
   "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=DM+Sans:wght@300;400;500;600&display=swap",
 ];

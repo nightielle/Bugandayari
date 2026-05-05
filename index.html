@@ -542,6 +542,7 @@
     </div>
     <!-- end #app -->
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="shared.js"></script>
     <script>
       /* ══ AUTH ════════════════════════════════ */
@@ -556,11 +557,11 @@
         });
       }
 
-      function doLogin() {
+      async function doLogin() {
         const user = document.getElementById("a-login-user").value.trim();
         const pw = document.getElementById("a-login-pw").value;
         const err = document.getElementById("login-err");
-        const res = Accounts.login(user, pw);
+        const res = await Accounts.login(user, pw);
         if (!res.ok) {
           err.textContent = res.msg;
           return;
@@ -570,7 +571,7 @@
         launchApp();
       }
 
-      function doRegister() {
+      async function doRegister() {
         const user = document.getElementById("a-reg-user").value.trim();
         const pw = document.getElementById("a-reg-pw").value;
         const pw2 = document.getElementById("a-reg-pw2").value;
@@ -579,7 +580,7 @@
           err.textContent = "Hindi magkatugma ang mga password.";
           return;
         }
-        const res = Accounts.register(user, pw);
+        const res = await Accounts.register(user, pw);
         if (!res.ok) {
           err.textContent = res.msg;
           return;
@@ -630,19 +631,19 @@
         updateAccountSection();
       }
 
-      function updateAccountSection() {
+      async function updateAccountSection() {
         const sess = Session.get();
         if (!sess) return;
-        const acc = Accounts.findById(sess.userId);
+        const acc = await Accounts.findById(sess.userId);
         if (!acc) return;
         document.getElementById("acct-username-display").textContent =
           "👤 " + acc.username;
         document.getElementById("acct-created").textContent = formatDateTime(
-          acc.createdAt,
+          acc.created_at,
         );
         document.getElementById("acct-lastlogin").textContent =
-          formatDateTime(acc.lastLogin) || "Hindi pa naka-login muli";
-        const crops = Store.getCrops();
+          formatDateTime(acc.last_login) || "Hindi pa naka-login muli";
+        const crops = await Store.getCrops();
         document.getElementById("acct-crop-count").textContent =
           "🌱 " + crops.length + " na tanaman sa iyong account";
       }
@@ -650,10 +651,10 @@
       function confirmClearMyNotes() {
         document.getElementById("confirm-msg").textContent =
           "Burahin ang LAHAT ng iyong tanaman, gastos, at tala? Hindi na ito maibabalik.";
-        document.getElementById("confirm-yes").onclick = () => {
+        document.getElementById("confirm-yes").onclick = async () => {
           const sess = Session.get();
-          Store.clearCrops(sess?.userId);
-          Store.saveExpenses([], sess?.userId);
+          await Store.clearCrops(sess?.userId);
+        await Store.clearExpenses(sess?.userId);
           closeModal("ov-confirm");
           toast("🗑️ Nabura na ang lahat ng iyong tala.");
           updateAccountSection();
@@ -666,13 +667,13 @@
         openModal("ov-confirm");
       }
 
-      function changeMyPw() {
+      async function changeMyPw() {
         const cur = document.getElementById("pw-cur").value;
         const nw = document.getElementById("pw-new").value;
         const rep = document.getElementById("pw-rep").value;
         const msg = document.getElementById("pw-msg");
         const sess = Session.get();
-        const acc = Accounts.findById(sess?.userId);
+        const acc = await Accounts.findById(sess?.userId);
         if (!acc || acc.password !== cur) {
           msg.style.color = "var(--red)";
           msg.textContent = "Mali ang kasalukuyang password.";
@@ -688,10 +689,7 @@
           msg.textContent = "Hindi magkatugma ang mga password.";
           return;
         }
-        const accounts = Accounts.getAll();
-        const i = accounts.findIndex((a) => a.id === acc.id);
-        if (i > -1) accounts[i].password = nw;
-        Accounts.save(accounts);
+        await db.from("accounts").update({ password: nw }).eq("id", acc.id);
         ["pw-cur", "pw-new", "pw-rep"].forEach(
           (id) => (document.getElementById(id).value = ""),
         );
@@ -701,10 +699,10 @@
       }
 
       /* ══ AUTO-RESTORE SESSION ══════════════ */
-      window.addEventListener("DOMContentLoaded", () => {
-        if (Session.isLoggedIn()) {
-          const sess = Session.get();
-          const acc = Accounts.findById(sess?.userId);
+      window.addEventListener("DOMContentLoaded", async () => {
+        const sess = Session.restore();
+        if (sess) {
+          const acc = await Accounts.findById(sess.userId);
           if (acc) {
             launchApp();
             return;
@@ -752,8 +750,8 @@
       syncOnline();
 
       /* ══ HOME ══════════════════════════════ */
-      function renderHome() {
-        const all = Store.getCrops();
+      async function renderHome() {
+        const all = await Store.getCrops();
         const active = all.filter((c) => c.status !== "Harvested");
         document.getElementById("cnt-planted").textContent = all.filter(
           (c) => c.status === "Planted",
@@ -768,7 +766,7 @@
           (c) => c.status === "Harvested",
         ).length;
         const due = active.filter((c) => {
-          const d = daysUntil(c.harvestDate);
+          const d = daysUntil(c.harvest_at);
           return d !== null && d >= 0 && d <= 7;
         });
         const strip = document.getElementById("alert-strip");
@@ -806,8 +804,8 @@
         });
       });
 
-      function renderCrops() {
-        const all = Store.getCrops();
+      async function renderCrops() {
+        const all = await Store.getCrops();
         const active = all.filter((c) => c.status !== "Harvested");
         const past = all.filter((c) => c.status === "Harvested");
         const shown =
@@ -827,7 +825,7 @@
       }
 
       function cropCardHTML(c, isPast = false) {
-        const d = daysUntil(c.harvestDate);
+        const d = daysUntil(c.harvest_at);
         let daysTag = "",
           urgentCls = "";
         if (d !== null && c.status !== "Harvested") {
@@ -865,9 +863,9 @@
           escHtml(c.name) +
           "</div>" +
           '<div class="crop-sub"><span>Tanim: ' +
-          formatDate(c.plantDate) +
+          formatDate(c.planted_at) +
           "</span><span>Ani: " +
-          formatDate(c.harvestDate) +
+          formatDate(c.harvest_at) +
           "</span></div>" +
           (c.notes
             ? '<div class="crop-note">' + escHtml(c.notes) + "</div>"
@@ -907,7 +905,7 @@
         });
       });
 
-      function renderPrices() {
+      async function renderPrices() {
         const upd = Store.getPricesUpdated();
         document.getElementById("price-updated").textContent = upd
           ? "Na-update: " + upd
@@ -915,7 +913,7 @@
         const q = (document.getElementById("price-search").value || "")
           .toLowerCase()
           .trim();
-        const prices = Store.getPrices();
+        const prices = await Store.getPrices();
         const cats = ["Bigas", "Mais", "Gulay", "Prutas", "Ugat"];
         const list = document.getElementById("prices-list");
         const filtered = cats
@@ -985,11 +983,12 @@
         openModal("ov-crop");
       }
 
-      function openViewModal(id) {
-        const c = Store.getCrops().find((x) => x.id === id);
+      async function openViewModal(id) {
+        const crops = await Store.getCrops();
+        const c = crops.find((x) => x.id === id);
         if (!c) return;
         document.getElementById("v-title").textContent = c.name;
-        const d = daysUntil(c.harvestDate);
+        const d = daysUntil(c.harvest_at);
         let dinfo = "";
         if (d !== null) {
           if (d < 0) dinfo = " — " + Math.abs(d) + " araw na nakalipas";
@@ -1002,7 +1001,7 @@
           "Ready to Harvest": "🌾 Handa na",
           Harvested: "✅ Na-ani",
         };
-        const exps = Store.getExpensesForCrop(id);
+        const exps = await Store.getExpensesForCrop(id);
         const gastos = exps
           .filter((e) => e.type === "gastos")
           .reduce((s, e) => s + Number(e.amount), 0);
@@ -1029,10 +1028,10 @@
           (statusLabel[c.status] || c.status) +
           "</span></div>" +
           '<div class="detail-row"><span class="detail-label">Petsa ng Tanim</span><span class="detail-val">' +
-          formatDate(c.plantDate) +
+          formatDate(c.planted_at) +
           "</span></div>" +
           '<div class="detail-row"><span class="detail-label">Inaasahang Ani</span><span class="detail-val">' +
-          formatDate(c.harvestDate) +
+          formatDate(c.harvest_at) +
           dinfo +
           "</span></div>" +
           (c.yield
@@ -1048,7 +1047,7 @@
               "</span></div>"
             : "") +
           '<div class="detail-row"><span class="detail-label">Naidagdag</span><span class="detail-val">' +
-          formatDate(c.createdAt?.slice(0, 10)) +
+          formatDate(c.created_at?.slice(0, 10)) +
           "</span></div>" +
           expRow;
         document.getElementById("v-edit-btn").onclick = () => {
@@ -1074,16 +1073,17 @@
         openModal("ov-view");
       }
 
-      function openEditModal(id) {
-        const c = Store.getCrops().find((x) => x.id === id);
+      async function openEditModal(id) {
+        const crops = await Store.getCrops();
+        const c = crops.find((x) => x.id === id);
         if (!c) return;
         editId = id;
         document.getElementById("m-crop-title").textContent =
           "I-edit ang Tanaman";
         document.getElementById("m-id").value = id;
         document.getElementById("m-name").value = c.name;
-        document.getElementById("m-plant").value = c.plantDate;
-        document.getElementById("m-harvest").value = c.harvestDate;
+        document.getElementById("m-plant").value = c.planted_at;
+        document.getElementById("m-harvest").value = c.harvest_at;
         document.getElementById("m-status").value = c.status;
         document.getElementById("m-yield").value = c.yield || "";
         document.getElementById("m-unit").value = c.unit || "kilo";
@@ -1091,56 +1091,30 @@
         openModal("ov-crop");
       }
 
-      function saveCrop() {
+      async function saveCrop() {
         const name = document.getElementById("m-name").value.trim();
-        const plantDate = document.getElementById("m-plant").value;
-        const harvestDate = document.getElementById("m-harvest").value;
+        const planted_at = document.getElementById("m-plant").value;
+        const harvest_at = document.getElementById("m-harvest").value;
         const status = document.getElementById("m-status").value;
         const yieldVal = document.getElementById("m-yield").value;
         const unit = document.getElementById("m-unit").value;
         const notes = document.getElementById("m-notes").value.trim();
-        if (!name) {
-          toast("⚠️ Kailangan ang pangalan ng pananim.");
-          return;
-        }
-        if (!plantDate) {
-          toast("⚠️ Piliin ang petsa ng pagtatanim.");
-          return;
-        }
-        if (!harvestDate) {
-          toast("⚠️ Piliin ang inaasahang petsa ng pag-ani.");
-          return;
-        }
-        const crops = Store.getCrops();
-        if (editId) {
-          const i = crops.findIndex((c) => c.id === editId);
-          if (i > -1)
-            crops[i] = {
-              ...crops[i],
-              name,
-              plantDate,
-              harvestDate,
-              status,
-              yield: yieldVal ? parseFloat(yieldVal) : null,
-              unit,
-              notes,
-            };
-          toast("✅ Na-update na ang tanaman!");
-        } else {
-          crops.push({
-            id: genId(),
-            name,
-            plantDate,
-            harvestDate,
-            status,
-            yield: yieldVal ? parseFloat(yieldVal) : null,
-            unit,
-            notes,
-            createdAt: new Date().toISOString(),
-          });
-          toast("🌱 Naidagdag ang bagong tanaman!");
-        }
-        Store.saveCrops(crops);
+        if (!name) { toast("⚠️ Kailangan ang pangalan ng pananim."); return; }
+        if (!planted_at) { toast("⚠️ Piliin ang petsa ng pagtatanim."); return; }
+        if (!harvest_at) { toast("⚠️ Piliin ang inaasahang petsa ng pag-ani."); return; }
+        const crop = {
+          id: editId || genId(),
+          name,
+          planted_at,
+          harvest_at,
+          status,
+          yield: yieldVal ? parseFloat(yieldVal) : null,
+          unit,
+          notes,
+          created_at: editId ? undefined : new Date().toISOString(),
+        };
+        await Store.saveCrop(crop);
+        toast(editId ? "✅ Na-update na ang tanaman!" : "🌱 Naidagdag ang bagong tanaman!");
         closeModal("ov-crop");
         renderHome();
         if (activeSec === "crops") renderCrops();
@@ -1149,8 +1123,8 @@
       function confirmDelete(id, name) {
         document.getElementById("confirm-msg").textContent =
           'Burahin ang "' + name + '"? Hindi na ito maibabalik.';
-        document.getElementById("confirm-yes").onclick = () => {
-          Store.saveCrops(Store.getCrops().filter((c) => c.id !== id));
+        document.getElementById("confirm-yes").onclick = async () => {
+          await Store.deleteCrop(id);
           closeModal("ov-confirm");
           closeModal("ov-view");
           toast("🗑️ Nabura na ang tanaman.");
@@ -1188,8 +1162,8 @@
         openModal("ov-expense");
       }
 
-      function renderExpHistory(cropId) {
-        const list = Store.getExpensesForCrop(cropId);
+      async function renderExpHistory(cropId) {
+        const list = await Store.getExpensesForCrop(cropId);
         const el = document.getElementById("exp-history");
         if (!list.length) {
           el.innerHTML =
@@ -1224,37 +1198,32 @@
           .join("");
       }
 
-      function saveExpense() {
+      async function saveExpense() {
         const cropId = document.getElementById("exp-crop-id").value;
         const type = document.getElementById("exp-type").value;
         const amount = parseFloat(document.getElementById("exp-amount").value);
         const label = document.getElementById("exp-label").value.trim();
         const date = document.getElementById("exp-date").value;
-        if (!amount || amount <= 0) {
-          toast("⚠️ Ilagay ang tamang halaga.");
-          return;
-        }
-        Store.addExpense({ cropId, type, amount, label, date });
+        if (!amount || amount <= 0) { toast("⚠️ Ilagay ang tamang halaga."); return; }
+        await Store.addExpense({ crop_id: cropId, type, amount, label, date });
         document.getElementById("exp-amount").value = "";
         document.getElementById("exp-label").value = "";
         renderExpHistory(cropId);
-        toast(
-          type === "gastos" ? "💸 Naitala ang gastos!" : "💰 Naitala ang kita!",
-        );
+        toast(type === "gastos" ? "💸 Naitala ang gastos!" : "💰 Naitala ang kita!");
         if (activeSec === "ulat") renderUlat();
       }
 
-      function deleteExpense(id, cropId) {
-        Store.deleteExpense(id);
+      async function deleteExpense(id, cropId) {
+        await Store.deleteExpense(id);
         renderExpHistory(cropId);
         toast("🗑️ Nabura.");
         if (activeSec === "ulat") renderUlat();
       }
 
       /* ══ ULAT ═══════════════════════════════ */
-      function renderUlat() {
-        const crops = Store.getCrops();
-        const expenses = Store.getExpenses();
+      async function renderUlat() {
+        const crops = await Store.getCrops();
+        const expenses = await Store.getExpenses();
         const totalGastos = expenses
           .filter((e) => e.type === "gastos")
           .reduce((s, e) => s + Number(e.amount), 0);
@@ -1281,7 +1250,7 @@
           '</div><div class="ukpi-l">Net Kita</div></div>';
         const cropData = crops
           .map((c) => {
-            const ce = expenses.filter((e) => e.cropId === c.id);
+            const ce = expenses.filter((e) => e.crop_id === c.id);
             const g = ce
               .filter((e) => e.type === "gastos")
               .reduce((s, e) => s + Number(e.amount), 0);
@@ -1375,8 +1344,8 @@
         if (v === "timeline") renderTimeline();
       }
 
-      function renderTimeline() {
-        const crops = Store.getCrops();
+      async function renderTimeline() {
+        const crops = await Store.getCrops();
         const wrap = document.getElementById("timeline-wrap");
         if (!crops.length) {
           wrap.innerHTML = emptyState(
@@ -1386,7 +1355,7 @@
           return;
         }
         const allDates = crops.flatMap((c) =>
-          [c.plantDate, c.harvestDate].filter(Boolean),
+          [c.planted_at, c.harvest_at].filter(Boolean),
         );
         const minDate = new Date(allDates.sort()[0]);
         const maxDate = new Date(allDates.sort().reverse()[0]);
@@ -1437,9 +1406,9 @@
             .join("") +
           "</div></div>";
         crops.forEach((c) => {
-          if (!c.plantDate || !c.harvestDate) return;
-          const start = new Date(c.plantDate + "T00:00:00"),
-            end = new Date(c.harvestDate + "T00:00:00");
+          if (!c.planted_at || !c.harvest_at) return;
+          const start = new Date(c.planted_at + "T00:00:00"),
+            end = new Date(c.harvest_at + "T00:00:00");
           const left = Math.max(
             0,
             ((start - minDate) / 86400000 / totalDays) * 100,
@@ -1463,9 +1432,9 @@
             ';min-width:6px" title="' +
             c.name +
             ": " +
-            c.plantDate +
+            c.planted_at +
             " → " +
-            c.harvestDate +
+            c.harvest_at +
             '"></div><div style="position:absolute;left:' +
             todayPct +
             '%;top:0;bottom:0;width:2px;background:var(--terra);opacity:.7;pointer-events:none"></div></div></div>';

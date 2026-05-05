@@ -1,22 +1,14 @@
 "use strict";
 
-// ── SUPABASE CLIENT ──────────────────────────────────────────
-// Replace these two values with your own from:
-// Supabase Dashboard → Project Settings → API
+
 const SUPA_URL = "https://pfeehlpqxhcvqqeqxgfw.supabase.co";
 const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmZWVobHBxeGhjdnFxZXF4Z2Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NjIxNTAsImV4cCI6MjA5MzUzODE1MH0.ECWVkgs7QcgNW897aIrvW7fUvKjwlEswQyiq88tMa4M";
 
-const { createClient } = supabase; // loaded via CDN <script>
+const { createClient } = supabase; 
 const db = createClient(SUPA_URL, SUPA_KEY);
 
-// Set app.user_id on every request so RLS policies work.
-// Call this once after login / on page load.
 function setRlsUser(userId) {
-  // Supabase JS v2 uses per-request headers for custom claims.
-  // We attach it as a Postgres session variable via rpc, OR
-  // simply include it in every query's .eq('user_id', userId).
-  // The approach below stores it in module scope so all helpers
-  // can reference it without threading the param everywhere.
+
   _currentUserId = userId || null;
 }
 let _currentUserId = null;

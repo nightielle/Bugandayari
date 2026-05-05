@@ -1,4 +1,6 @@
 # 🌱 Bugandayari
+![Bugandayari Banner](images/<img width="720" height="261" alt="image" src="https://github.com/user-attachments/assets/d862b44d-3c42-4d84-9f3c-a96f1712d9ac" />
+.png)
 
 > **Tanum · Bantay · Presyo**  
 A farm management web app that helps farmers track crops, monitor growth, and stay updated with market prices.

@@ -1,4 +1,4 @@
-const CACHE = "bugandayari-v3";
+const CACHE = "bugandayari-v5";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -36,6 +36,11 @@ self.addEventListener("fetch", (e) => {
   // Only handle GET
   if (e.request.method !== "GET") return;
 
+  // Never cache Supabase API calls — always go to network
+  if (e.request.url.includes("supabase.co")) {
+    return; // let the browser handle it normally
+  }
+
   // For Google Fonts — network first, fallback to cache
   if (
     e.request.url.includes("fonts.gstatic.com") ||
@@ -53,23 +58,24 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // For everything else — cache first, network fallback
+  // For everything else — network first, then cache
+  // This ensures users always get the latest app files
   e.respondWith(
-    caches.match(e.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(e.request)
-        .then((res) => {
-          if (res && res.status === 200) {
-            const clone = res.clone();
-            caches.open(CACHE).then((c) => c.put(e.request, clone));
-          }
-          return res;
-        })
-        .catch(() => {
-          // For navigation, return index
+    fetch(e.request)
+      .then((res) => {
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, clone));
+        }
+        return res;
+      })
+      .catch(() =>
+        caches.match(e.request).then((cached) => {
+          if (cached) return cached;
+          // For navigation fallback, return index
           if (e.request.mode === "navigate")
             return caches.match("./index.html");
-        });
-    }),
+        }),
+      ),
   );
 });

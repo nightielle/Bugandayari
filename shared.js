@@ -4,14 +4,14 @@
 const SUPA_URL = "https://pfeehlpqxhcvqqeqxgfw.supabase.co";
 const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmZWVobHBxeGhjdnFxZXF4Z2Z3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NjIxNTAsImV4cCI6MjA5MzUzODE1MH0.ECWVkgs7QcgNW897aIrvW7fUvKjwlEswQyiq88tMa4M";
 
-const { createClient } = supabase; 
+const { createClient } = supabase;
 const db = createClient(SUPA_URL, SUPA_KEY);
 
-function setRlsUser(userId) {
+let _currentUserId = null;
 
+function setRlsUser(userId) {
   _currentUserId = userId || null;
 }
-let _currentUserId = null;
 
 // ── CATEGORY META (UI only — no DB) ─────────────────────────
 const CATEGORY_META = {
@@ -86,6 +86,7 @@ const Accounts = {
   },
 
   async findById(id) {
+    if (!id) return null;
     const { data, error } = await db
       .from("accounts")
       .select("*")
@@ -139,6 +140,15 @@ const Accounts = {
     const { error } = await db.from("accounts").delete().eq("id", userId);
     if (error) supaErr(error, "Accounts.deleteAccount");
   },
+
+  async getAll() {
+    const { data, error } = await db
+      .from("accounts")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) { console.error("[Supabase] Accounts.getAll:", error?.message); return []; }
+    return data || [];
+  },
 };
 
 // ── SESSION (still localStorage — it's just a token, not data) ──
@@ -154,7 +164,7 @@ const Session = {
       loginAt: new Date().toISOString(),
     };
     localStorage.setItem("bdyari_session", JSON.stringify(session));
-    setRlsUser(account.id); // keep RLS user in sync
+    setRlsUser(account.id);
   },
   clear() {
     localStorage.removeItem("bdyari_session");
@@ -182,23 +192,47 @@ const Store = {
       .eq("user_id", uid)
       .order("created_at", { ascending: false });
     if (error) return supaErr(error, "getCrops") || [];
-    return data;
+    return data || [];
   },
 
   async saveCrop(crop, userId) {
-    // Upsert a single crop (insert or update by id)
     const uid = userId || _currentUserId;
-    if (!uid) return null;
-    // Strip undefined values so Supabase doesn't reject them
-    const row = Object.fromEntries(
-      Object.entries({ ...crop, user_id: uid }).filter(([, v]) => v !== undefined)
-    );
+    if (!uid) {
+      console.error("[saveCrop] No user ID — session may not be restored yet.");
+      return null;
+    }
+
+    // Build the row, always ensuring created_at has a value (never undefined/null)
+    const now = new Date().toISOString();
+    const row = {
+      id: crop.id || genId(),
+      user_id: uid,
+      name: crop.name,
+      planted_at: crop.planted_at,
+      harvest_at: crop.harvest_at,
+      status: crop.status,
+      notes: crop.notes || null,
+      unit: crop.unit || "kilo",
+      // created_at: use existing value if editing, otherwise now
+      created_at: crop.created_at || now,
+    };
+
+    // Only include yield if it has a real value
+    if (crop.yield != null && crop.yield !== "") {
+      row.yield = parseFloat(crop.yield);
+    } else {
+      row.yield = null;
+    }
+
     const { data, error } = await db
       .from("crops")
       .upsert(row, { onConflict: "id" })
       .select()
       .single();
-    if (error) return supaErr(error, "saveCrop");
+    if (error) {
+      console.error("[Supabase] saveCrop error:", error.message, row);
+      return null;
+    }
     return data;
   },
 
@@ -222,15 +256,17 @@ const Store = {
       .eq("user_id", uid);
     if (error) supaErr(error, "clearCrops");
   },
-async clearExpenses(userId) {
-  const uid = userId || _currentUserId;
-  if (!uid) return;
-  const { error } = await db
-    .from("expenses")
-    .delete()
-    .eq("user_id", uid);
-  if (error) supaErr(error, "clearExpenses");
-},  
+
+  async clearExpenses(userId) {
+    const uid = userId || _currentUserId;
+    if (!uid) return;
+    const { error } = await db
+      .from("expenses")
+      .delete()
+      .eq("user_id", uid);
+    if (error) supaErr(error, "clearExpenses");
+  },
+
   // ── PRICES ─────────────────────────────────────────────────
   async getPrices() {
     const { data, error } = await db
@@ -239,11 +275,11 @@ async clearExpenses(userId) {
       .order("category")
       .order("name");
     if (error) return supaErr(error, "getPrices") || [];
-    return data;
+    return data || [];
   },
 
   async savePrices(prices) {
-    // Bulk upsert — admin only (enforced by RLS policy)
+    // Bulk upsert — admin only
     const { error } = await db
       .from("prices")
       .upsert(prices, { onConflict: "id" });
@@ -266,8 +302,6 @@ async clearExpenses(userId) {
   },
 
   getPricesUpdated() {
-    // prices.updated_at comes from the DB trigger — read the max value
-    // We cache the last fetched timestamp in localStorage for display only
     const raw = localStorage.getItem("bdyari_prices_updated");
     if (!raw) return null;
     const d = new Date(raw);
@@ -287,7 +321,7 @@ async clearExpenses(userId) {
       .eq("user_id", uid)
       .order("date", { ascending: false });
     if (error) return supaErr(error, "getExpenses") || [];
-    return data;
+    return data || [];
   },
 
   async getExpensesForCrop(cropId, userId) {
@@ -300,16 +334,22 @@ async clearExpenses(userId) {
       .eq("user_id", uid)
       .order("date", { ascending: false });
     if (error) return supaErr(error, "getExpensesForCrop") || [];
-    return data;
+    return data || [];
   },
 
   async addExpense(entry, userId) {
     const uid = userId || _currentUserId;
-    if (!uid) return null;
+    if (!uid) {
+      console.error("[addExpense] No user ID — session may not be restored.");
+      return null;
+    }
     const row = {
-      ...entry,
       id: entry.id || genId(),
       user_id: uid,
+      crop_id: entry.crop_id,
+      type: entry.type,
+      amount: entry.amount,
+      label: entry.label || null,
       date: entry.date || todayISO(),
     };
     const { data, error } = await db
@@ -317,7 +357,10 @@ async clearExpenses(userId) {
       .insert(row)
       .select()
       .single();
-    if (error) return supaErr(error, "addExpense");
+    if (error) {
+      console.error("[Supabase] addExpense error:", error.message, row);
+      return null;
+    }
     return data;
   },
 
@@ -332,7 +375,7 @@ async clearExpenses(userId) {
     if (error) supaErr(error, "deleteExpense");
   },
 
-  // ── WEATHER (still cached locally — it's a temp API response) ──
+  // ── WEATHER (cached locally — temp API response) ──
   getCachedWeather() {
     try {
       const raw = JSON.parse(localStorage.getItem("bdyari_weather_cache"));
@@ -349,7 +392,7 @@ async clearExpenses(userId) {
     );
   },
 
-  // ── ADMIN PASSWORD (still localStorage — single-device admin) ──
+  // ── ADMIN PASSWORD ──
   getAdminPw() {
     return localStorage.getItem("bdyari_admin_pw") || "admin1234";
   },

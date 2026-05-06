@@ -700,14 +700,25 @@
 
       /* ══ AUTO-RESTORE SESSION ══════════════ */
       window.addEventListener("DOMContentLoaded", async () => {
+        // Session.restore() also calls setRlsUser so _currentUserId is set
         const sess = Session.restore();
         if (sess) {
-          const acc = await Accounts.findById(sess.userId);
-          if (acc) {
+          try {
+            const acc = await Accounts.findById(sess.userId);
+            if (acc) {
+              // Ensure user ID is definitely set before rendering anything
+              setRlsUser(acc.id);
+              launchApp();
+              return;
+            }
+            // Account no longer exists in DB
+            Session.clear();
+          } catch (err) {
+            // Network error: still launch with cached session so offline works
+            console.warn("[Session restore] Network error, launching offline:", err);
+            setRlsUser(sess.userId);
             launchApp();
-            return;
           }
-          Session.clear();
         }
       });
 
@@ -1102,6 +1113,15 @@
         if (!name) { toast("⚠️ Kailangan ang pangalan ng pananim."); return; }
         if (!planted_at) { toast("⚠️ Piliin ang petsa ng pagtatanim."); return; }
         if (!harvest_at) { toast("⚠️ Piliin ang inaasahang petsa ng pag-ani."); return; }
+
+        // If editing, preserve the original created_at so Supabase upsert doesn't fail
+        let existingCreatedAt = null;
+        if (editId) {
+          const all = await Store.getCrops();
+          const existing = all.find((x) => x.id === editId);
+          existingCreatedAt = existing?.created_at || null;
+        }
+
         const crop = {
           id: editId || genId(),
           name,
@@ -1111,9 +1131,14 @@
           yield: yieldVal ? parseFloat(yieldVal) : null,
           unit,
           notes,
-          created_at: editId ? undefined : new Date().toISOString(),
+          // Always a real value — never undefined or null
+          created_at: existingCreatedAt || new Date().toISOString(),
         };
-        await Store.saveCrop(crop);
+        const saved = await Store.saveCrop(crop);
+        if (!saved) {
+          toast("❌ Hindi na-save. Subukang muli o tingnan ang console.");
+          return;
+        }
         toast(editId ? "✅ Na-update na ang tanaman!" : "🌱 Naidagdag ang bagong tanaman!");
         closeModal("ov-crop");
         renderHome();
@@ -1205,7 +1230,11 @@
         const label = document.getElementById("exp-label").value.trim();
         const date = document.getElementById("exp-date").value;
         if (!amount || amount <= 0) { toast("⚠️ Ilagay ang tamang halaga."); return; }
-        await Store.addExpense({ crop_id: cropId, type, amount, label, date });
+        const saved = await Store.addExpense({ crop_id: cropId, type, amount, label, date });
+        if (!saved) {
+          toast("❌ Hindi na-save ang gastos/kita. Subukang muli.");
+          return;
+        }
         document.getElementById("exp-amount").value = "";
         document.getElementById("exp-label").value = "";
         renderExpHistory(cropId);

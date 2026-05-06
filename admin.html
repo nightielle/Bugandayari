@@ -2,1226 +2,686 @@
 <html lang="fil">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bugandayari — Admin</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#1c3a1c" />
+    <meta
+      name="description"
+      content="Bugandayari — Rekord ng tanaman at presyo ng palengke para sa mga magsasaka."
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Bugandayari" />
+    <title>Bugandayari</title>
+    <link rel="manifest" href="manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=DM+Sans:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles/admin.css" />
-  
+    <link rel="stylesheet" href="styles/index.css" />
   </head>
   <body>
-    <!-- LOGIN -->
-    <div id="login-screen">
-      <div class="login-box">
-        <div class="login-logo"> Bugandayari</div>
-        <div class="login-sub">Farm Management System</div>
-        <div class="login-badge">Admin Portal</div>
-        <div class="login-field">
-          <label>Username</label
-          ><input
-            type="text"
-            id="l-user"
-            value="admin"
-            autocomplete="username"
-            placeholder="admin"
-          />
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen">
+      <div class="auth-logo">Bugandayari</div>
+      <div class="auth-tagline">Tanum · Bantay · Presyo</div>
+      <div class="auth-box">
+        <div class="auth-tabs">
+          <button
+            class="auth-tab active"
+            id="tab-login"
+            onclick="showAuthTab('login')"
+          >
+            Mag-login
+          </button>
+          <button
+            class="auth-tab"
+            id="tab-register"
+            onclick="showAuthTab('register')"
+          >
+            Mag-register
+          </button>
         </div>
-        <div class="login-field">
-          <label>Password</label
-          ><input
-            type="password"
-            id="l-pw"
-            placeholder="••••••••"
-            autocomplete="current-password"
-          />
+        <!-- LOGIN -->
+        <div class="auth-panel active" id="panel-login">
+          <div class="auth-field">
+            <label>Username</label>
+            <input
+              type="text"
+              id="a-login-user"
+              placeholder="Ilagay ang iyong username"
+              autocomplete="username"
+            />
+          </div>
+          <div class="auth-field">
+            <label>Password</label>
+            <input
+              type="password"
+              id="a-login-pw"
+              placeholder="••••••••"
+              autocomplete="current-password"
+            />
+          </div>
+          <button class="auth-btn" onclick="doLogin()">Mag-login →</button>
+          <div class="auth-err" id="login-err"></div>
         </div>
-        <button class="login-btn" onclick="doLogin()">Mag-login →</button>
-        <div class="login-error" id="l-err"></div>
-        <div class="login-hint">Default password: <code>admin1234</code></div>
+        <!-- REGISTER -->
+        <div class="auth-panel" id="panel-register">
+          <div class="auth-field">
+            <label>Username</label>
+            <input
+              type="text"
+              id="a-reg-user"
+              placeholder="Pumili ng username (3+ karakter)"
+              autocomplete="username"
+            />
+          </div>
+          <div class="auth-field">
+            <label>Password</label>
+            <input
+              type="password"
+              id="a-reg-pw"
+              placeholder="Pumili ng password (6+ karakter)"
+              autocomplete="new-password"
+            />
+          </div>
+          <div class="auth-field">
+            <label>Ulitin ang Password</label>
+            <input
+              type="password"
+              id="a-reg-pw2"
+              placeholder="••••••••"
+              autocomplete="new-password"
+            />
+          </div>
+          <button class="auth-btn" onclick="doRegister()">
+            Gumawa ng Account →
+          </button>
+          <div class="auth-err" id="reg-err"></div>
+        </div>
       </div>
     </div>
 
-    <!-- APP -->
-    <div id="app-shell">
-      <!-- SIDEBAR -->
-      <nav class="sidebar">
-        <div class="sb-brand">
-          <div class="sb-logo"> Bugandayari</div>
-          <div class="sb-badge">Admin</div>
-        </div>
-        <div class="sb-nav">
-          <div class="sb-section">Overview</div>
-          <div class="sb-item active" data-panel="dashboard">
-            <span class="sb-icon">📊</span><span>Dashboard</span>
+    <!-- MAIN APP (hidden until logged in) -->
+    <div id="app" style="display: none">
+      <!-- INSTALL BAR -->
+      <div id="install-bar" class="install-bar hidden">
+        <p>
+          I-install ang <strong>Bugandayari</strong> sa iyong telepono para
+          gumana kahit offline.
+        </p>
+        <button class="install-btn" id="install-btn">I-install</button>
+        <button class="install-dismiss" id="install-dismiss" aria-label="Isara">
+          ✕
+        </button>
+      </div>
+
+      <!-- APP BAR -->
+      <header class="app-bar">
+        <div class="app-bar-inner">
+          <div class="wordmark">
+            Bugandayari<small>Tanum · Bantay · Presyo</small>
           </div>
-          <div class="sb-section">Pamamahala</div>
-          <div class="sb-item" data-panel="accounts">
-            <span class="sb-icon">👥</span><span>Mga Account</span>
-          </div>
-          <div class="sb-item" data-panel="prices">
-            <span class="sb-icon">💰</span><span>Presyo</span>
-          </div>
-          <div class="sb-item" data-panel="crops">
-            <span class="sb-icon">🌱</span><span>Tanaman</span>
-          </div>
-          <div class="sb-section">System</div>
-          <div class="sb-item" data-panel="settings">
-            <span class="sb-icon">⚙️</span><span>Settings</span>
-          </div>
-        </div>
-        <div class="sb-footer">
-          <div class="sb-user">Naka-login bilang Admin</div>
-          <a href="index.html" class="sb-farmer-link"
-            >👨‍🌾 <span>Farmer View</span></a
-          >
-          <div class="sb-logout" onclick="doLogout()">
-            🚪 <span>Mag-logout</span>
+          <div class="hd-right">
+            <span class="offline-pill" id="offline-pill">📵 Offline</span>
+            <div class="user-chip" id="user-chip" onclick="switchToAccount()">
+              👤 <span id="user-chip-name">...</span>
+            </div>
           </div>
         </div>
+      </header>
+
+      <main class="main">
+        <!-- HOME -->
+        <div id="sec-home" class="section active">
+          <div class="weather-card" id="weather-card">
+            <div>
+              <div class="weather-main">
+                <div class="weather-ico" id="wx-ico">⏳</div>
+                <div>
+                  <div class="weather-temp" id="wx-temp">--°</div>
+                  <div class="weather-desc" id="wx-desc">Kina-load…</div>
+                  <div class="weather-loc" id="wx-loc">Iloilo City</div>
+                </div>
+              </div>
+              <div class="weather-forecast" id="wx-forecast"></div>
+            </div>
+            <div class="weather-details">
+              <div>💧 <strong id="wx-hum">--</strong>%</div>
+              <div>🌬️ <strong id="wx-wind">--</strong> km/h</div>
+              <div>🌧️ <strong id="wx-rain">--</strong> mm</div>
+            </div>
+          </div>
+          <div id="alert-strip" class="alert-strip hidden">
+            <span class="alert-ico">⚠️</span>
+            <span id="alert-text"></span>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-card s-planted">
+              <div class="stat-n" id="cnt-planted">0</div>
+              <div class="stat-l">Nagtanim</div>
+            </div>
+            <div class="stat-card s-growing">
+              <div class="stat-n" id="cnt-growing">0</div>
+              <div class="stat-l">Lumalaki</div>
+            </div>
+            <div class="stat-card s-ready">
+              <div class="stat-n" id="cnt-ready">0</div>
+              <div class="stat-l">Handa na</div>
+            </div>
+            <div class="stat-card s-harvested">
+              <div class="stat-n" id="cnt-harvested">0</div>
+              <div class="stat-l">Na-ani</div>
+            </div>
+          </div>
+          <div class="sec-title">Mga Kasalukuyang Tanaman</div>
+          <div class="crop-list" id="home-list"></div>
+        </div>
+
+        <!-- CROPS -->
+        <div id="sec-crops" class="section">
+          <div class="view-toggle">
+            <button
+              class="vt-btn active"
+              id="vt-list"
+              onclick="setCropsView('list')"
+            >
+              📋 Listahan
+            </button>
+            <button
+              class="vt-btn"
+              id="vt-timeline"
+              onclick="setCropsView('timeline')"
+            >
+              📅 Timeline
+            </button>
+          </div>
+          <div id="crops-view-list">
+            <div class="chip-row" id="crop-filters">
+              <span class="chip on" data-f="all">Lahat</span>
+              <span class="chip" data-f="Planted">🌱 Nagtanim</span>
+              <span class="chip" data-f="Growing">🌿 Lumalaki</span>
+              <span class="chip" data-f="Ready to Harvest">🌾 Handa na</span>
+            </div>
+            <div class="crop-list" id="crops-list"></div>
+            <div class="sec-title mt2">📦 Nakaraang Ani</div>
+            <div class="crop-list" id="past-list"></div>
+          </div>
+          <div id="crops-view-timeline" class="hidden">
+            <div class="timeline-wrap" id="timeline-wrap"></div>
+          </div>
+        </div>
+
+        <!-- PRICES -->
+        <div id="sec-prices" class="section">
+          <div class="price-topbar">
+            <div class="sec-title" style="margin-bottom: 0">
+              Presyo ng Palengke
+            </div>
+            <div class="price-updated" id="price-updated"></div>
+          </div>
+          <div style="margin-top: 0.5rem"></div>
+          <div class="offline-notice" id="offline-notice">
+            📵 Nagpapakita ng nakaimbak na presyo. Ikonekta sa internet para
+            ma-update.
+          </div>
+          <input
+            type="search"
+            class="search-box"
+            id="price-search"
+            placeholder="Maghanap ng produkto…"
+            autocomplete="off"
+            oninput="renderPrices()"
+          />
+          <div class="chip-row" id="cat-chips">
+            <span class="chip on" data-cat="all">Lahat</span>
+            <span class="chip" data-cat="Bigas">🌾 Bigas</span>
+            <span class="chip" data-cat="Mais">🌽 Mais</span>
+            <span class="chip" data-cat="Gulay">🥬 Gulay</span>
+            <span class="chip" data-cat="Prutas">🍌 Prutas</span>
+            <span class="chip" data-cat="Ugat">🥕 Ugat</span>
+          </div>
+          <div id="prices-list"></div>
+        </div>
+
+        <!-- ULAT -->
+        <div id="sec-ulat" class="section">
+          <div class="ulat-kpi" id="ulat-kpi"></div>
+          <div class="chart-wrap" id="ulat-chart-kita">
+            <div class="chart-title">🌾 Pinaka-Kumikitang Pananim</div>
+            <div class="bar-chart" id="chart-top-crops"></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-title">📊 Gastos vs Kita (bawat pananim)</div>
+            <div class="crop-profit-list" id="crop-profit-list"></div>
+          </div>
+        </div>
+
+        <!-- ACCOUNT -->
+        <div id="sec-account" class="section">
+          <div class="sec-title">👤 Aking Account</div>
+          <div class="account-card">
+            <h3 id="acct-username-display">—</h3>
+            <div class="account-info">
+              <span>📅 Nag-register: <strong id="acct-created">—</strong></span>
+              <span
+                >🕐 Huling Login: <strong id="acct-lastlogin">—</strong></span
+              >
+              <span id="acct-crop-count">🌱 0 na tanaman</span>
+            </div>
+          </div>
+
+          <div class="account-card">
+            <h3>🗑️ I-clear ang Aking mga Tala</h3>
+            <p
+              style="
+                font-size: 0.83rem;
+                color: var(--text-3);
+                margin-bottom: 1rem;
+                line-height: 1.5;
+              "
+            >
+              Permanent na mabubura ang lahat ng iyong mga tanaman, gastos, at
+              tala. Hindi na ito maibabalik.
+            </p>
+            <button class="clear-notes-btn" onclick="confirmClearMyNotes()">
+              🗑️ Burahin ang Lahat ng Aking Tala
+            </button>
+          </div>
+
+          <div class="account-card">
+            <h3>🔐 Baguhin ang Password</h3>
+            <div class="field">
+              <label>Kasalukuyang Password</label
+              ><input type="password" id="pw-cur" placeholder="••••••••" />
+            </div>
+            <div class="field">
+              <label>Bagong Password</label
+              ><input type="password" id="pw-new" placeholder="••••••••" />
+            </div>
+            <div class="field">
+              <label>Ulitin</label
+              ><input type="password" id="pw-rep" placeholder="••••••••" />
+            </div>
+            <button class="btn btn-primary" onclick="changeMyPw()">
+              I-update ang Password
+            </button>
+            <div
+              id="pw-msg"
+              style="font-size: 0.78rem; margin-top: 0.5rem; min-height: 1.1rem"
+            ></div>
+          </div>
+
+          <button class="logout-btn" onclick="doLogout()">🚪 Mag-logout</button>
+        </div>
+      </main>
+
+      <!-- BOTTOM NAV -->
+      <nav class="bottom-nav">
+        <button class="nav-btn active" data-sec="home">
+          <span class="nav-icon">🏡</span><span class="nav-label">Home</span>
+        </button>
+        <button class="nav-btn" data-sec="crops">
+          <span class="nav-icon">🌱</span><span class="nav-label">Tanaman</span>
+        </button>
+        <button class="nav-btn" data-sec="prices">
+          <span class="nav-icon">💰</span><span class="nav-label">Presyo</span>
+        </button>
+        <button class="nav-btn" data-sec="ulat">
+          <span class="nav-icon">📊</span><span class="nav-label">Ulat</span>
+        </button>
+        <button class="nav-btn" data-sec="account">
+          <span class="nav-icon">👤</span><span class="nav-label">Account</span>
+        </button>
       </nav>
 
-      <!-- CONTENT -->
-      <div class="content-area">
-        <div class="topbar">
-          <div class="page-title" id="page-title">Dashboard</div>
-          <div class="topbar-right">
-            <span
-              id="now-time"
-              style="font-size: 0.8rem; color: var(--text3)"
-            ></span>
-          </div>
-        </div>
+      <!-- FAB -->
+      <button
+        class="fab"
+        id="fab"
+        onclick="openAddModal()"
+        aria-label="Magdagdag ng tanaman"
+      >
+        <span>+</span> Magdagdag
+      </button>
 
-        <div class="main-pad">
-          <!-- DASHBOARD -->
-          <div class="panel active" id="panel-dashboard">
-            <div class="kpi-grid">
-              <div class="kpi">
-                <div class="kpi-n" id="d-accounts">0</div>
-                <div class="kpi-l">Mga Account</div>
-                <div class="kpi-accent" style="background: var(--mint)"></div>
-              </div>
-              <div class="kpi">
-                <div class="kpi-n" id="d-total">0</div>
-                <div class="kpi-l">Lahat ng Tanaman</div>
-                <div class="kpi-accent" style="background: var(--sage)"></div>
-              </div>
-              <div class="kpi">
-                <div class="kpi-n" id="d-harvest">0</div>
-                <div class="kpi-l">Handa nang Anihin</div>
-                <div class="kpi-accent" style="background: var(--gold)"></div>
-              </div>
-              <div class="kpi">
-                <div class="kpi-n" id="d-prices">0</div>
-                <div class="kpi-l">Mga Presyo</div>
-                <div class="kpi-accent" style="background: #1565c0"></div>
-              </div>
-            </div>
-            <div class="two-col">
-              <div class="card">
-                <div class="card-hd">
-                  <div class="card-title">👥 Pinakabagong Mga Account</div>
-                  <button
-                    class="btn btn-ghost btn-sm"
-                    onclick="switchPanel('accounts')"
-                  >
-                    Tingnan Lahat
-                  </button>
-                </div>
-                <div class="tbl-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Username</th>
-                        <th>Tanaman</th>
-                        <th>Nag-register</th>
-                      </tr>
-                    </thead>
-                    <tbody id="d-accounts-tb"></tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="card">
-                <div class="card-hd">
-                  <div class="card-title">⚠️ Mag-aani Agad (7 Araw)</div>
-                </div>
-                <div class="tbl-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Pananim</th>
-                        <th>Account</th>
-                        <th>Araw Na Lang</th>
-                      </tr>
-                    </thead>
-                    <tbody id="d-due-tb"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+      <!-- ADD/EDIT CROP -->
+      <div class="overlay hidden" id="ov-crop">
+        <div
+          class="modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="m-crop-title"
+        >
+          <div class="modal-hd">
+            <span class="modal-title" id="m-crop-title">Bagong Tanaman</span>
+            <button class="mclose" onclick="closeModal('ov-crop')">✕</button>
           </div>
-
-          <!-- ACCOUNTS -->
-          <div class="panel" id="panel-accounts">
-            <div class="card mb1">
-              <div class="card-hd">
-                <div class="card-title">Lahat ng Registered Accounts</div>
-                <input
-                  type="search"
-                  class="search-box"
-                  id="acct-search"
-                  placeholder="Maghanap ng account…"
-                  oninput="renderAccounts()"
-                />
-              </div>
-              <div
-                class="card-body"
-                id="accounts-list-body"
-                style="padding: 0.75rem 1.2rem"
-              >
-                <div class="empty">
-                  <div class="empty-ico">👥</div>
-                  <p>Wala pang mga account.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- PRICES -->
-          <div class="panel" id="panel-prices">
-            <div class="card mb1">
-              <div class="card-hd">
-                <div class="card-title">I-manage ang Presyo ng Palengke</div>
-                <div style="display: flex; gap: 0.5rem">
-                  <button
-                    class="btn btn-gold btn-sm"
-                    onclick="openAddPriceModal()"
-                  >
-                    + Bagong Presyo
-                  </button>
-                  <button
-                    class="btn btn-primary btn-sm"
-                    onclick="saveAllPrices()"
-                  >
-                    💾 I-save Lahat
-                  </button>
-                </div>
-              </div>
-              <div class="card-body" style="padding-bottom: 0.5rem">
-                <div
-                  style="
-                    display: flex;
-                    gap: 0.75rem;
-                    align-items: center;
-                    flex-wrap: wrap;
-                  "
-                >
-                  <input
-                    type="search"
-                    class="search-box"
-                    id="p-search"
-                    placeholder="Maghanap ng produkto…"
-                    oninput="renderAdminPrices()"
-                  />
-                  <div class="chip-row" id="p-cat-chips" style="margin: 0">
-                    <span class="chip on" data-cat="all">Lahat</span>
-                    <span class="chip" data-cat="Bigas">🌾 Bigas</span>
-                    <span class="chip" data-cat="Mais">🌽 Mais</span>
-                    <span class="chip" data-cat="Gulay">🥬 Gulay</span>
-                    <span class="chip" data-cat="Prutas">🍌 Prutas</span>
-                    <span class="chip" data-cat="Ugat">🥕 Ugat</span>
-                  </div>
-                </div>
-              </div>
-              <div class="tbl-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Produkto</th>
-                      <th>Kategorya</th>
-                      <th>Yunit</th>
-                      <th>Presyo (₱)</th>
-                      <th>Trend</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody id="prices-tb"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- CROPS (ALL USERS) -->
-          <div class="panel" id="panel-crops">
-            <div class="card">
-              <div class="card-hd">
-                <div class="card-title">
-                  Lahat ng Rekord ng Tanaman (All Accounts)
-                </div>
-                <div style="display: flex; gap: 0.5rem; align-items: center">
-                  <input
-                    type="search"
-                    class="search-box"
-                    id="c-search"
-                    placeholder="Maghanap…"
-                    oninput="renderAdminCrops()"
-                  />
-                </div>
-              </div>
-              <div class="card-body" style="padding-bottom: 0.3rem">
-                <div class="chip-row" id="c-filter-chips">
-                  <span class="chip on" data-cf="all">Lahat</span>
-                  <span class="chip" data-cf="Planted">🌱 Nagtanim</span>
-                  <span class="chip" data-cf="Growing">🌿 Lumalaki</span>
-                  <span class="chip" data-cf="Ready to Harvest"
-                    >🌾 Handa na</span
-                  >
-                  <span class="chip" data-cf="Harvested">✅ Na-ani</span>
-                </div>
-              </div>
-              <div class="tbl-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Pangalan</th>
-                      <th>Account</th>
-                      <th>Katayuan</th>
-                      <th>Petsa ng Tanim</th>
-                      <th>Petsa ng Ani</th>
-                      <th>Araw</th>
-                    </tr>
-                  </thead>
-                  <tbody id="crops-tb"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- SETTINGS -->
-          <div class="panel" id="panel-settings">
-            <div class="settings-grid">
-              <div class="settings-item">
-                <h4>🔐 Baguhin ang Password</h4>
-                <p>Palitan ang admin password para sa seguridad.</p>
-                <div class="field">
-                  <label>Kasalukuyang Password</label
-                  ><input
-                    type="password"
-                    id="s-cur-pw"
-                    placeholder="••••••••"
-                  />
-                </div>
-                <div class="field">
-                  <label>Bagong Password</label
-                  ><input
-                    type="password"
-                    id="s-new-pw"
-                    placeholder="••••••••"
-                  />
-                </div>
-                <div class="field">
-                  <label>Ulitin ang Bagong Password</label
-                  ><input
-                    type="password"
-                    id="s-rep-pw"
-                    placeholder="••••••••"
-                  />
-                </div>
-                <button class="btn btn-primary" onclick="changePw()">
-                  I-update ang Password
-                </button>
-                <div
-                  id="pw-msg"
-                  style="
-                    font-size: 0.78rem;
-                    margin-top: 0.5rem;
-                    min-height: 1.1rem;
-                  "
-                ></div>
-              </div>
-              <div class="settings-item">
-                <h4>📤 I-export ang Data</h4>
-                <p>
-                  I-download ang lahat ng rekord bilang JSON file para sa
-                  backup.
-                </p>
-                <button
-                  class="btn btn-ghost"
-                  onclick="exportData()"
-                  style="margin-bottom: 0.6rem; width: 100%"
-                >
-                  ⬇️ I-export ang Lahat ng Data
-                </button>
-                <h4 style="margin-top: 1rem">📥 I-import ang Data</h4>
-                <p style="margin-top: 0.3rem">
-                  I-upload ang JSON backup file para i-restore ang data.
-                </p>
-                <label
-                  class="btn btn-ghost"
-                  style="
-                    margin-top: 0.3rem;
-                    width: 100%;
-                    justify-content: center;
-                    cursor: pointer;
-                  "
-                  >⬆️ Pumili ng JSON File<input
-                    type="file"
-                    accept=".json"
-                    style="display: none"
-                    onchange="importData(event)"
-                /></label>
-              </div>
-              <div class="settings-item">
-                <h4>🔄 I-reset ang Presyo</h4>
-                <p>
-                  Ibalik ang lahat ng presyo sa mga default na halaga mula sa DA
-                  data.
-                </p>
-                <button class="btn btn-danger" onclick="confirmResetPrices()">
-                  I-reset ang Presyo sa Default
-                </button>
-              </div>
-              <div class="settings-item">
-                <h4>🗑️ I-clear ang Lahat ng Tanaman</h4>
-                <p>
-                  Permanently na burahin ang lahat ng rekord ng tanaman ng lahat
-                  ng users. Hindi na mababawi.
-                </p>
-                <button class="btn btn-danger" onclick="confirmClearAllCrops()">
-                  Burahin ang Lahat ng Tanaman
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODALS -->
-    <!-- ADD/EDIT PRICE -->
-    <div class="overlay hidden" id="ov-price">
-      <div class="modal">
-        <div class="modal-hd">
-          <span class="modal-title" id="pm-title">Bagong Presyo</span
-          ><button class="mclose" onclick="closeOv('ov-price')">✕</button>
-        </div>
-        <div class="modal-bd">
-          <input type="hidden" id="pm-id" />
-          <div class="field-row">
+          <div class="modal-bd">
+            <input type="hidden" id="m-id" />
             <div class="field">
-              <label>Pangalan ng Produkto *</label
-              ><input type="text" id="pm-name" placeholder="hal. Kamatis" />
-            </div>
-            <div class="field">
-              <label>Kategorya *</label
-              ><select id="pm-cat">
-                <option value="Bigas">🌾 Bigas</option>
-                <option value="Mais">🌽 Mais</option>
-                <option value="Gulay">🥬 Gulay</option>
-                <option value="Prutas">🍌 Prutas</option>
-                <option value="Ugat">🥕 Ugat</option>
-              </select>
-            </div>
-          </div>
-          <div class="field-row">
-            <div class="field">
-              <label>Presyo (₱) *</label
-              ><input
-                type="number"
-                id="pm-price"
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-              />
-            </div>
-            <div class="field">
-              <label>Yunit *</label
+              <label>Pangalan ng Pananim *</label
               ><input
                 type="text"
-                id="pm-unit"
-                placeholder="kilo / piraso / bigkis"
+                id="m-name"
+                placeholder="hal. Palay, Mais, Kamote…"
+                autocomplete="off"
               />
             </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Petsa ng Tanim *</label
+                ><input type="date" id="m-plant" />
+              </div>
+              <div class="field">
+                <label>Inaasahang Ani *</label
+                ><input type="date" id="m-harvest" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Katayuan</label>
+              <select id="m-status">
+                <option value="Planted">🌱 Nagtanim</option>
+                <option value="Growing">🌿 Lumalaki</option>
+                <option value="Ready to Harvest">🌾 Handa nang Anihin</option>
+                <option value="Harvested">✅ Na-ani na</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Dami ng Ani (opsyonal)</label
+                ><input
+                  type="number"
+                  id="m-yield"
+                  placeholder="0"
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+              <div class="field">
+                <label>Yunit</label
+                ><select id="m-unit">
+                  <option value="kilo">Kilo</option>
+                  <option value="sako">Sako</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Mga Tala (opsyonal)</label
+              ><textarea
+                id="m-notes"
+                placeholder="Karagdagang impormasyon…"
+              ></textarea>
+            </div>
           </div>
-          <div class="field">
-            <label>Trend</label
-            ><select id="pm-trend">
-              <option value="same">— Walang pagbabago</option>
-              <option value="up">▲ Tumaas</option>
-              <option value="down">▼ Bumaba</option>
-            </select>
+          <div class="modal-ft">
+            <button class="btn btn-ghost" onclick="closeModal('ov-crop')">
+              Kanselahin
+            </button>
+            <button class="btn btn-primary" onclick="saveCrop()">
+              💾 I-save
+            </button>
           </div>
         </div>
-        <div class="modal-ft">
-          <button class="btn btn-ghost" onclick="closeOv('ov-price')">
-            Kanselahin
-          </button>
-          <button class="btn btn-primary" onclick="savePriceItem()">
-            💾 I-save
-          </button>
+      </div>
+
+      <!-- VIEW CROP -->
+      <div class="overlay hidden" id="ov-view">
+        <div
+          class="modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="v-title"
+        >
+          <div class="modal-hd">
+            <span class="modal-title" id="v-title"></span>
+            <button class="mclose" onclick="closeModal('ov-view')">✕</button>
+          </div>
+          <div class="modal-bd" id="v-body"></div>
+          <div class="modal-ft">
+            <button class="btn btn-danger" id="v-del-btn">🗑️ Burahin</button>
+            <button class="btn btn-ghost" onclick="closeModal('ov-view')">
+              Isara
+            </button>
+            <button class="btn btn-primary" id="v-edit-btn">✏️ I-edit</button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- VIEW USER DATA -->
-    <div class="overlay hidden" id="ov-user-data">
-      <div class="modal wide">
-        <div class="modal-hd">
-          <span class="modal-title" id="ud-title">Account Data</span
-          ><button class="mclose" onclick="closeOv('ov-user-data')">✕</button>
-        </div>
-        <div class="modal-bd" id="ud-body"></div>
-        <div class="modal-ft">
-          <button class="btn btn-ghost" onclick="closeOv('ov-user-data')">
-            Isara
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- CONFIRM -->
-    <div class="overlay hidden" id="ov-confirm">
-      <div class="confirm-box">
-        <h3 id="cf-title">Kumpirmahin</h3>
-        <p id="cf-msg"></p>
-        <div class="confirm-btns">
-          <button class="btn btn-ghost" onclick="closeOv('ov-confirm')">
-            Kanselahin
-          </button>
-          <button class="btn btn-danger" id="cf-yes">Oo, ituloy</button>
+      <!-- CONFIRM -->
+      <div class="overlay hidden" id="ov-confirm">
+        <div class="modal sm" role="dialog" aria-modal="true">
+          <div class="modal-hd">
+            <span class="modal-title">Kumpirmahin</span>
+          </div>
+          <div class="modal-bd">
+            <p
+              id="confirm-msg"
+              style="
+                font-size: 1rem;
+                line-height: 1.5;
+                text-align: center;
+                padding: 0.5rem 0;
+              "
+            ></p>
+          </div>
+          <div class="modal-ft">
+            <button class="btn btn-ghost" id="confirm-no">Hindi</button>
+            <button class="btn btn-danger" id="confirm-yes">Oo, Burahin</button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="toast" id="toast"></div>
+      <!-- EXPENSE MODAL -->
+      <div class="overlay hidden" id="ov-expense">
+        <div class="modal" role="dialog" aria-modal="true">
+          <div class="modal-hd">
+            <span class="modal-title" id="exp-modal-title">Gastos / Kita</span>
+            <button class="mclose" onclick="closeModal('ov-expense')">✕</button>
+          </div>
+          <div class="modal-bd">
+            <input type="hidden" id="exp-crop-id" />
+            <div class="field-row">
+              <div class="field">
+                <label>Uri</label>
+                <select id="exp-type">
+                  <option value="gastos">💸 Gastos</option>
+                  <option value="kita">💰 Kita</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Halaga (₱)</label
+                ><input
+                  type="number"
+                  id="exp-amount"
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label>Paliwanag</label
+              ><input
+                type="text"
+                id="exp-label"
+                placeholder="hal. Binhi, Pataba, Nabenta…"
+              />
+            </div>
+            <div class="field">
+              <label>Petsa</label><input type="date" id="exp-date" />
+            </div>
+            <div class="divider"></div>
+            <div
+              class="sec-title"
+              style="font-size: 0.9rem; margin-top: 0.5rem"
+            >
+              Kasaysayan
+            </div>
+            <div id="exp-history"></div>
+          </div>
+          <div class="modal-ft">
+            <button class="btn btn-ghost" onclick="closeModal('ov-expense')">
+              Isara
+            </button>
+            <button class="btn btn-primary" onclick="saveExpense()">
+              I-save
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+    </div>
+    <!-- end #app -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="shared.js"></script>
     <script>
-      /* ── ACCOUNTS.GETALL (missing from shared.js — added here) ── */
-      Accounts.getAll = async function () {
-        const { data, error } = await db
-          .from("accounts")
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (error) { console.error("[Supabase] Accounts.getAll:", error?.message); return []; }
-        return data || [];
-      };
+      /* ══ AUTH ════════════════════════════════ */
+      function showAuthTab(tab) {
+        ["login", "register"].forEach((t) => {
+          document
+            .getElementById("tab-" + t)
+            .classList.toggle("active", t === tab);
+          document
+            .getElementById("panel-" + t)
+            .classList.toggle("active", t === tab);
+        });
+      }
 
-      /* ── DEFAULT PRICES (fallback for reset) ── */
-      const DEFAULT_PRICES = [
-        { id: "p_bigas1",  name: "Bigas (Regular)",   category: "Bigas",  unit: "kilo",   price: 45,  trend: "same" },
-        { id: "p_bigas2",  name: "Bigas (Sinandomeng)",category: "Bigas",  unit: "kilo",   price: 55,  trend: "same" },
-        { id: "p_mais1",   name: "Mais (Dilaw)",       category: "Mais",   unit: "kilo",   price: 22,  trend: "same" },
-        { id: "p_gulay1",  name: "Kamatis",            category: "Gulay",  unit: "kilo",   price: 80,  trend: "up"   },
-        { id: "p_gulay2",  name: "Sibuyas",            category: "Gulay",  unit: "kilo",   price: 120, trend: "up"   },
-        { id: "p_gulay3",  name: "Bawang",             category: "Gulay",  unit: "kilo",   price: 200, trend: "same" },
-        { id: "p_gulay4",  name: "Ampalaya",           category: "Gulay",  unit: "kilo",   price: 60,  trend: "same" },
-        { id: "p_prutas1", name: "Saging (Lakatan)",   category: "Prutas", unit: "kilo",   price: 50,  trend: "same" },
-        { id: "p_prutas2", name: "Mangga",             category: "Prutas", unit: "kilo",   price: 90,  trend: "up"   },
-        { id: "p_ugat1",   name: "Kamote",             category: "Ugat",   unit: "kilo",   price: 35,  trend: "same" },
-        { id: "p_ugat2",   name: "Gabi",               category: "Ugat",   unit: "kilo",   price: 40,  trend: "same" },
-      ];
-
-      /* ── LOGIN ───────────────────── */
-      function doLogin() {
-        const user = document.getElementById("l-user").value.trim();
-        const pw = document.getElementById("l-pw").value;
-        const err = document.getElementById("l-err");
-        if (user !== "admin") {
-          err.textContent = "Mali ang username.";
-          return;
-        }
-        if (pw !== Store.getAdminPw()) {
-          err.textContent = "Mali ang password.";
+      async function doLogin() {
+        const user = document.getElementById("a-login-user").value.trim();
+        const pw = document.getElementById("a-login-pw").value;
+        const err = document.getElementById("login-err");
+        const res = await Accounts.login(user, pw);
+        if (!res.ok) {
+          err.textContent = res.msg;
           return;
         }
         err.textContent = "";
-        document.getElementById("login-screen").style.display = "none";
-        document.getElementById("app-shell").classList.add("visible");
-        renderDashboard();
-        startClock();
+        Session.set(res.account);
+        launchApp();
       }
-      document.getElementById("l-pw").addEventListener("keydown", (e) => {
+
+      async function doRegister() {
+        const user = document.getElementById("a-reg-user").value.trim();
+        const pw = document.getElementById("a-reg-pw").value;
+        const pw2 = document.getElementById("a-reg-pw2").value;
+        const err = document.getElementById("reg-err");
+        if (pw !== pw2) {
+          err.textContent = "Hindi magkatugma ang mga password.";
+          return;
+        }
+        const res = await Accounts.register(user, pw);
+        if (!res.ok) {
+          err.textContent = res.msg;
+          return;
+        }
+        err.textContent = "";
+        Session.set(res.account);
+        launchApp();
+      }
+
+      document.getElementById("a-login-pw").addEventListener("keydown", (e) => {
         if (e.key === "Enter") doLogin();
       });
+      document.getElementById("a-reg-pw2").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") doRegister();
+      });
+
+      function launchApp() {
+        document.getElementById("auth-screen").style.display = "none";
+        document.getElementById("app").style.display = "";
+        const sess = Session.get();
+        document.getElementById("user-chip-name").textContent =
+          sess?.username || "";
+        renderHome();
+        renderPrices();
+        loadWeather();
+        updateAccountSection();
+      }
+
       function doLogout() {
-        document.getElementById("login-screen").style.display = "";
-        document.getElementById("app-shell").classList.remove("visible");
-        document.getElementById("l-pw").value = "";
+        Session.clear();
+        document.getElementById("app").style.display = "none";
+        document.getElementById("auth-screen").style.display = "";
+        document.getElementById("a-login-user").value = "";
+        document.getElementById("a-login-pw").value = "";
       }
 
-      /* ── SIDEBAR NAV ─────────────── */
-      let activePanel = "dashboard";
-      const panelTitles = {
-        dashboard: "Dashboard",
-        accounts: "Mga Account",
-        prices: "Pamamahala ng Presyo",
-        crops: "Rekord ng Tanaman",
-        settings: "Mga Setting",
-      };
-      document.querySelectorAll(".sb-item[data-panel]").forEach((item) => {
-        item.addEventListener("click", () => switchPanel(item.dataset.panel));
-      });
-      function switchPanel(id) {
-        activePanel = id;
+      function switchToAccount() {
         document
-          .querySelectorAll(".sb-item")
+          .querySelectorAll(".nav-btn")
+          .forEach((b) => b.classList.remove("active"));
+        document.querySelector('[data-sec="account"]').classList.add("active");
+        document
+          .querySelectorAll(".section")
           .forEach((x) => x.classList.remove("active"));
-        document
-          .querySelector('.sb-item[data-panel="' + id + '"]')
-          ?.classList.add("active");
-        document
-          .querySelectorAll(".panel")
-          .forEach((x) => x.classList.remove("active"));
-        document.getElementById("panel-" + id).classList.add("active");
-        document.getElementById("page-title").textContent =
-          panelTitles[id] || id;
-        if (id === "dashboard") renderDashboard();
-        if (id === "accounts") renderAccounts();
-        if (id === "prices") renderAdminPrices();
-        if (id === "crops") renderAdminCrops();
+        document.getElementById("sec-account").classList.add("active");
+        activeSec = "account";
+        document.getElementById("fab").classList.add("hidden");
+        updateAccountSection();
       }
 
-      /* ── CLOCK ───────────────────── */
-      function startClock() {
-        const el = document.getElementById("now-time");
-        function tick() {
-          el.textContent = new Date().toLocaleString("fil-PH", {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-        }
-        tick();
-        setInterval(tick, 10000);
-      }
-
-      /* ── HELPER: get all crops across all accounts ── */
-      async function getAllAccountsWithData() {
-        const accounts = await Accounts.getAll();
-        const result = [];
-        for (const acc of accounts) {
-          const crops = await Store.getCrops(acc.id);
-          const expenses = await Store.getExpenses(acc.id);
-          const totalKita = expenses
-            .filter((e) => e.type === "kita")
-            .reduce((s, e) => s + Number(e.amount), 0);
-          const totalGastos = expenses
-            .filter((e) => e.type === "gastos")
-            .reduce((s, e) => s + Number(e.amount), 0);
-          result.push({
-            ...acc,
-            crops,
-            expenses,
-            totalKita,
-            totalGastos,
-            net: totalKita - totalGastos,
-          });
-        }
-        return result;
-      }
-
-      async function getAllCropsTagged() {
-        const accounts = await Accounts.getAll();
-        const all = [];
-        for (const acc of accounts) {
-          const crops = await Store.getCrops(acc.id);
-          crops.forEach((c) =>
-            all.push({ ...c, _username: acc.username, _userId: acc.id }),
-          );
-        }
-        return all;
-      }
-
-      /* ── DASHBOARD ───────────────── */
-      async function renderDashboard() {
-        const accountsData = await getAllAccountsWithData();
-        const accounts = accountsData;
-        const allCrops = await getAllCropsTagged();
-        const prices = await Store.getPrices();
-        document.getElementById("d-accounts").textContent = accounts.length;
-        document.getElementById("d-total").textContent = allCrops.length;
-        document.getElementById("d-harvest").textContent = allCrops.filter(
-          (c) => c.status === "Ready to Harvest",
-        ).length;
-        document.getElementById("d-prices").textContent = prices.length;
-
-        // Recent accounts
-        const recent = [...accounts]
-          .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))
-          .slice(0, 6);
-        const tb1 = document.getElementById("d-accounts-tb");
-        // Build crops count map from already-fetched accountsData
-        const cropCountMap = {};
-        for (const a of accountsData) cropCountMap[a.id] = a.crops.length;
-        tb1.innerHTML = recent.length
-          ? recent
-              .map((acc) => {
-                const cropCount = cropCountMap[acc.id] || 0;
-                return (
-                  "<tr><td><strong>" +
-                  escHtml(acc.username) +
-                  "</strong></td><td>" +
-                  cropCount +
-                  ' tanaman</td><td style="font-size:.78rem;color:var(--text3)">' +
-                  formatDateTime(acc.created_at) +
-                  "</td></tr>"
-                );
-              })
-              .join("")
-          : '<tr><td colspan="3" class="empty">Walang account pa.</td></tr>';
-
-        // Due soon
-        const due = allCrops
-          .filter((c) => {
-            const d = daysUntil(c.harvest_at);
-            return c.status !== "Harvested" && d !== null && d >= 0 && d <= 7;
-          })
-          .sort((a, b) =>
-            (a.harvestDate || "").localeCompare(b.harvestDate || ""),
-          );
-        const tb2 = document.getElementById("d-due-tb");
-        tb2.innerHTML = due.length
-          ? due
-              .map((c) => {
-                const d = daysUntil(c.harvest_at);
-                return (
-                  "<tr><td><strong>" +
-                  escHtml(c.name) +
-                  '</strong></td><td style="font-size:.78rem">' +
-                  escHtml(c._username) +
-                  '</td><td style="color:' +
-                  (d === 0 ? "var(--red)" : "var(--gold)") +
-                  ';font-weight:700">' +
-                  (d === 0 ? "Ngayon!" : d + " araw na lang") +
-                  "</td></tr>"
-                );
-              })
-              .join("")
-          : '<tr><td colspan="3" class="empty">Walang mag-aani sa loob ng 7 araw.</td></tr>';
-      }
-
-      /* ── ACCOUNTS PANEL ──────────── */
-      async function renderAccounts() {
-        const q = (
-          document.getElementById("acct-search")?.value || ""
-        ).toLowerCase();
-        const all = await getAllAccountsWithData();
-        const accountsData = all.filter(
-          (a) => !q || a.username.toLowerCase().includes(q),
-        );
-        const body = document.getElementById("accounts-list-body");
-        if (!accountsData.length) {
-          body.innerHTML =
-            '<div class="empty"><div class="empty-ico">👥</div><p>Walang account na nahanap.</p></div>';
-          return;
-        }
-        body.innerHTML = accountsData
-          .map((acc) => {
-            const initials = acc.username.slice(0, 2).toUpperCase();
-            const activeCrops = acc.crops.filter(
-              (c) => c.status !== "Harvested",
-            ).length;
-            const harvestedCrops = acc.crops.filter(
-              (c) => c.status === "Harvested",
-            ).length;
-            return (
-              '<div class="acct-card">' +
-              '<div class="acct-avatar">' +
-              escHtml(initials) +
-              "</div>" +
-              '<div class="acct-info">' +
-              '<div class="acct-name">' +
-              escHtml(acc.username) +
-              "</div>" +
-              '<div class="acct-meta">' +
-              "<span>📅 Nag-register: " +
-              formatDateTime(acc.created_at) +
-              "</span>" +
-              "<span>🕐 Huling login: " +
-              (acc.last_login ? formatDateTime(acc.last_login) : "Wala pa") +
-              "</span>" +
-              "</div>" +
-              '<div class="acct-stats">' +
-              '<span class="acct-stat">🌱 ' +
-              acc.crops.length +
-              " tanaman</span>" +
-              (activeCrops
-                ? '<span class="acct-stat">🌿 ' + activeCrops + " aktibo</span>"
-                : "") +
-              (harvestedCrops
-                ? '<span class="acct-stat">✅ ' +
-                  harvestedCrops +
-                  " na-ani</span>"
-                : "") +
-              (acc.totalKita > 0
-                ? '<span class="acct-stat">💰 ₱' +
-                  acc.totalKita.toLocaleString("en-PH", {
-                    maximumFractionDigits: 0,
-                  }) +
-                  "</span>"
-                : "") +
-              "</div></div>" +
-              '<div class="acct-actions">' +
-              '<button class="btn btn-sm btn-info" onclick="openUserData(\'' +
-              acc.id +
-              "')\">👁️ Data</button>" +
-              '<button class="btn btn-sm btn-danger" onclick="confirmDeleteAccount(\'' +
-              acc.id +
-              "','" +
-              escHtml(acc.username) +
-              "')\">🗑️</button>" +
-              "</div></div>"
-            );
-          })
-          .join("");
-      }
-
-      /* ── VIEW USER DATA ──────────── */
-      async function openUserData(userId) {
-        const acc = await Accounts.findById(userId);
+      async function updateAccountSection() {
+        const sess = Session.get();
+        if (!sess) return;
+        const acc = await Accounts.findById(sess.userId);
         if (!acc) return;
-        const crops = await Store.getCrops(userId);
-        const expenses = await Store.getExpenses(userId);
-        document.getElementById("ud-title").textContent =
-          "👤 Data ni " + acc.username;
+        document.getElementById("acct-username-display").textContent =
+          "👤 " + acc.username;
+        document.getElementById("acct-created").textContent = formatDateTime(
+          acc.created_at,
+        );
+        document.getElementById("acct-lastlogin").textContent =
+          formatDateTime(acc.last_login) || "Hindi pa naka-login muli";
+        const crops = await Store.getCrops();
+        document.getElementById("acct-crop-count").textContent =
+          "🌱 " + crops.length + " na tanaman sa iyong account";
+      }
 
-        const statusBadge = {
-          Planted: "b-planted",
-          Growing: "b-growing",
-          "Ready to Harvest": "b-ready",
-          Harvested: "b-harvested",
+      function confirmClearMyNotes() {
+        document.getElementById("confirm-msg").textContent =
+          "Burahin ang LAHAT ng iyong tanaman, gastos, at tala? Hindi na ito maibabalik.";
+        document.getElementById("confirm-yes").onclick = async () => {
+          const sess = Session.get();
+          await Store.clearCrops(sess?.userId);
+        await Store.clearExpenses(sess?.userId);
+          closeModal("ov-confirm");
+          toast("🗑️ Nabura na ang lahat ng iyong tala.");
+          updateAccountSection();
+          renderHome();
+          if (activeSec === "crops") renderCrops();
+          if (activeSec === "ulat") renderUlat();
         };
-        const statusLbl = {
-          Planted: "🌱 Nagtanim",
-          Growing: "🌿 Lumalaki",
-          "Ready to Harvest": "🌾 Handa na",
-          Harvested: "✅ Na-ani",
-        };
-
-        const totalKita = expenses
-          .filter((e) => e.type === "kita")
-          .reduce((s, e) => s + Number(e.amount), 0);
-        const totalGastos = expenses
-          .filter((e) => e.type === "gastos")
-          .reduce((s, e) => s + Number(e.amount), 0);
-        const net = totalKita - totalGastos;
-
-        let html =
-          '<div class="user-data-section">' +
-          "<h4>📋 Impormasyon ng Account</h4>" +
-          '<div class="detail-row"><span class="detail-label">Username</span><span class="detail-val"><strong>' +
-          escHtml(acc.username) +
-          "</strong></span></div>" +
-          '<div class="detail-row"><span class="detail-label">Nag-register</span><span class="detail-val">' +
-          formatDateTime(acc.created_at) +
-          "</span></div>" +
-          '<div class="detail-row"><span class="detail-label">Huling Login</span><span class="detail-val">' +
-          (acc.last_login ? formatDateTime(acc.last_login) : "Hindi pa") +
-          "</span></div>" +
-          '<div class="detail-row"><span class="detail-label">Bilang ng Tanaman</span><span class="detail-val">' +
-          crops.length +
-          "</span></div>" +
-          '<div class="detail-row"><span class="detail-label">Kabuuang Kita</span><span class="detail-val" style="color:#2e7d32;font-weight:700">₱' +
-          totalKita.toLocaleString("en-PH", { maximumFractionDigits: 0 }) +
-          "</span></div>" +
-          '<div class="detail-row"><span class="detail-label">Kabuuang Gastos</span><span class="detail-val" style="color:var(--red);font-weight:700">₱' +
-          totalGastos.toLocaleString("en-PH", { maximumFractionDigits: 0 }) +
-          "</span></div>" +
-          '<div class="detail-row"><span class="detail-label">Net Kita</span><span class="detail-val" style="color:' +
-          (net >= 0 ? "#2e7d32" : "var(--red)") +
-          ';font-weight:700">' +
-          (net >= 0 ? "+" : "") +
-          "₱" +
-          net.toLocaleString("en-PH", { maximumFractionDigits: 0 }) +
-          "</span></div>" +
-          "</div>";
-
-        html += '<div class="user-data-section"><h4>🌱 Mga Tanaman</h4>';
-        if (!crops.length) {
-          html += '<div class="no-data">Walang tanaman pa.</div>';
-        } else {
-          html +=
-            '<div style="overflow-x:auto"><table><thead><tr><th>Pangalan</th><th>Katayuan</th><th>Petsa ng Tanim</th><th>Inaasahang Ani</th><th>Dami</th><th>Mga Tala</th></tr></thead><tbody>' +
-            crops
-              .map((c) => {
-                const cropExp = expenses.filter((e) => e.crop_id === c.id);
-                const cKita = cropExp
-                  .filter((e) => e.type === "kita")
-                  .reduce((s, e) => s + Number(e.amount), 0);
-                const cGastos = cropExp
-                  .filter((e) => e.type === "gastos")
-                  .reduce((s, e) => s + Number(e.amount), 0);
-                const cNet = cKita - cGastos;
-                const hasFinancial = cropExp.length > 0;
-                return (
-                  "<tr>" +
-                  "<td><strong>" +
-                  escHtml(c.name) +
-                  "</strong>" +
-                  (hasFinancial
-                    ? '<br><span style="font-size:.68rem;color:var(--text3)">Net: ' +
-                      (cNet >= 0 ? "+" : "") +
-                      "₱" +
-                      cNet.toLocaleString("en-PH", {
-                        maximumFractionDigits: 0,
-                      }) +
-                      "</span>"
-                    : "") +
-                  "</td>" +
-                  '<td><span class="badge ' +
-                  (statusBadge[c.status] || "") +
-                  '">' +
-                  (statusLbl[c.status] || c.status) +
-                  "</span></td>" +
-                  '<td style="font-size:.78rem">' +
-                  formatDate(c.planted_at) +
-                  "</td>" +
-                  '<td style="font-size:.78rem">' +
-                  formatDate(c.harvest_at) +
-                  "</td>" +
-                  '<td style="font-size:.78rem">' +
-                  (c.yield ? c.yield + " " + c.unit : "—") +
-                  "</td>" +
-                  '<td style="font-size:.75rem;color:var(--text3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' +
-                  escHtml(c.notes || "") +
-                  '">' +
-                  escHtml(c.notes || "—") +
-                  "</td>" +
-                  "</tr>"
-                );
-              })
-              .join("") +
-            "</tbody></table></div>";
-        }
-        html += "</div>";
-
-        if (expenses.length) {
-          html +=
-            '<div class="user-data-section"><h4>💸 Mga Gastos / Kita</h4><div style="overflow-x:auto"><table><thead><tr><th>Uri</th><th>Halaga</th><th>Paliwanag</th><th>Petsa</th></tr></thead><tbody>' +
-            expenses
-              .slice()
-              .sort((a, b) => b.date.localeCompare(a.date))
-              .slice(0, 20)
-              .map(
-                (e) =>
-                  "<tr><td>" +
-                  (e.type === "kita" ? "💰 Kita" : "💸 Gastos") +
-                  "</td>" +
-                  '<td style="font-weight:700;color:' +
-                  (e.type === "kita" ? "#2e7d32" : "var(--red)") +
-                  '">₱' +
-                  Number(e.amount).toLocaleString("en-PH", {
-                    minimumFractionDigits: 2,
-                  }) +
-                  "</td>" +
-                  '<td style="font-size:.82rem">' +
-                  escHtml(e.label || "—") +
-                  "</td>" +
-                  '<td style="font-size:.78rem">' +
-                  formatDate(e.date) +
-                  "</td></tr>",
-              )
-              .join("") +
-            "</tbody></table></div></div>";
-        }
-
-        document.getElementById("ud-body").innerHTML = html;
-        openOv("ov-user-data");
+        document.getElementById("confirm-no").onclick = () =>
+          closeModal("ov-confirm");
+        openModal("ov-confirm");
       }
 
-      /* ── DELETE ACCOUNT ──────────── */
-      async function confirmDeleteAccount(userId, username) {
-        showConfirm(
-          "Burahin ang Account",
-          'Sigurado kang burahin ang account ni "' +
-            username +
-            '"? Mabubura rin ang lahat ng kanyang datos.',
-          async () => {
-    await Accounts.deleteAccount(userId);
-            renderAccounts();
-            if (activePanel === "dashboard") renderDashboard();
-            toast("🗑️ Nabura na ang account ni " + username + ".");
-          },
-        );
-      }
-
-      /* ── PRICES ──────────────────── */
-      let pCat = "all";
-      document.querySelectorAll("#p-cat-chips .chip").forEach((ch) => {
-        ch.addEventListener("click", () => {
-          document
-            .querySelectorAll("#p-cat-chips .chip")
-            .forEach((x) => x.classList.remove("on"));
-          ch.classList.add("on");
-          pCat = ch.dataset.cat;
-          renderAdminPrices();
-        });
-      });
-
-      async function renderAdminPrices() {
-        const prices = await Store.getPrices();
-        const q = (
-          document.getElementById("p-search")?.value || ""
-        ).toLowerCase();
-        const filtered = prices.filter(
-          (p) =>
-            (pCat === "all" || p.category === pCat) &&
-            (!q || p.name.toLowerCase().includes(q)),
-        );
-        const tb = document.getElementById("prices-tb");
-        if (!filtered.length) {
-          tb.innerHTML =
-            '<tr><td colspan="6"><div class="empty"><div class="empty-ico">🔍</div>Walang nahanap.</div></td></tr>';
-          return;
-        }
-        const meta = CATEGORY_META;
-        tb.innerHTML = filtered
-          .map(
-            (p) =>
-              '<tr data-pid="' +
-              p.id +
-              '">' +
-              "<td><strong>" +
-              escHtml(p.name) +
-              "</strong></td>" +
-              "<td>" +
-              (meta[p.category]?.icon || "") +
-              " " +
-              escHtml(p.category) +
-              "</td>" +
-              "<td>" +
-              escHtml(p.unit) +
-              "</td>" +
-              '<td><input class="price-input" type="number" min="0" step="0.01" value="' +
-              Number(p.price).toFixed(2) +
-              '" data-pid="' +
-              p.id +
-              '" onchange="updatePriceField(\'' +
-              p.id +
-              "','price',this.value)\"/></td>" +
-              '<td><select class="trend-sel" onchange="updatePriceField(\'' +
-              p.id +
-              "','trend',this.value)\"><option value=\"same\" " +
-              (p.trend === "same" ? "selected" : "") +
-              '>—</option><option value="up" ' +
-              (p.trend === "up" ? "selected" : "") +
-              '>▲ Tumaas</option><option value="down" ' +
-              (p.trend === "down" ? "selected" : "") +
-              ">▼ Bumaba</option></select></td>" +
-              '<td><div class="row-actions"><button class="btn btn-sm btn-ghost" onclick="openEditPriceModal(\'' +
-              p.id +
-              '\')">✏️</button><button class="btn btn-sm btn-danger" onclick="deletePrice(\'' +
-              p.id +
-              "')\">🗑️</button></div></td>" +
-              "</tr>",
-          )
-          .join("");
-      }
-
-      const _priceEdits = {};
-      function updatePriceField(id, field, val) {
-        if (!_priceEdits[id]) _priceEdits[id] = {};
-        _priceEdits[id][field] = field === "price" ? parseFloat(val) || 0 : val;
-      }
-
-      async function saveAllPrices() {
-        const prices = await Store.getPrices();
-        const toUpsert = [];
-        for (const [id, edits] of Object.entries(_priceEdits)) {
-          const base = prices.find((p) => p.id === id);
-          if (base) toUpsert.push({ ...base, ...edits });
-        }
-        if (toUpsert.length) await Store.savePrices(toUpsert);
-        Object.keys(_priceEdits).forEach((k) => delete _priceEdits[k]);
-        toast("✅ Nai-save na ang lahat ng presyo!");
-        renderAdminPrices();
-      }
-
-      function openAddPriceModal() {
-        document.getElementById("pm-title").textContent = "Bagong Presyo";
-        ["pm-id", "pm-name", "pm-price"].forEach(
-          (id) => (document.getElementById(id).value = ""),
-        );
-        document.getElementById("pm-cat").value = "Gulay";
-        document.getElementById("pm-unit").value = "kilo";
-        document.getElementById("pm-trend").value = "same";
-        openOv("ov-price");
-      }
-
-      async function openEditPriceModal(id) {
-        const prices = await Store.getPrices();
-        const p = prices.find((x) => x.id === id);
-        if (!p) return;
-        document.getElementById("pm-title").textContent = "I-edit ang Presyo";
-        document.getElementById("pm-id").value = id;
-        document.getElementById("pm-name").value = p.name;
-        document.getElementById("pm-cat").value = p.category;
-        document.getElementById("pm-price").value = Number(p.price).toFixed(2);
-        document.getElementById("pm-unit").value = p.unit;
-        document.getElementById("pm-trend").value = p.trend;
-        openOv("ov-price");
-      }
-
-      async function savePriceItem() {
-        const id = document.getElementById("pm-id").value;
-        const name = document.getElementById("pm-name").value.trim();
-        const cat = document.getElementById("pm-cat").value;
-        const price = parseFloat(document.getElementById("pm-price").value);
-        const unit = document.getElementById("pm-unit").value.trim();
-        const trend = document.getElementById("pm-trend").value;
-        if (!name) {
-          toast("⚠️ Kailangan ang pangalan.");
-          return;
-        }
-        if (isNaN(price) || price < 0) {
-          toast("⚠️ Kailangan ng wastong presyo.");
-          return;
-        }
-        if (!unit) {
-          toast("⚠️ Kailangan ang yunit.");
-          return;
-        }
-        const priceItem = id
-          ? { id, name, category: cat, price, unit, trend }
-          : { id: "p" + genId(), name, category: cat, price, unit, trend };
-        await Store.savePrice(priceItem);
-        closeOv("ov-price");
-        renderAdminPrices();
-        toast(
-          id ? "✅ Na-update ang presyo!" : "✅ Naidagdag ang bagong presyo!",
-        );
-      }
-
-      async function deletePrice(id) {
-        showConfirm(
-          "Burahin ang Presyo",
-          "Sigurado kang burahin ang presyong ito?",
-          async () => {
-    const allPrices = await Store.getPrices();
-await Store.deletePrice(id);
-            renderAdminPrices();
-            toast("🗑️ Nabura ang presyo.");
-          },
-        );
-      }
-
-      /* ── CROPS (ALL ACCOUNTS) ────── */
-      let cFilter = "all";
-      document.querySelectorAll("#c-filter-chips .chip").forEach((ch) => {
-        ch.addEventListener("click", () => {
-          document
-            .querySelectorAll("#c-filter-chips .chip")
-            .forEach((x) => x.classList.remove("on"));
-          ch.classList.add("on");
-          cFilter = ch.dataset.cf;
-          renderAdminCrops();
-        });
-      });
-
-      async function renderAdminCrops() {
-        const q = (
-          document.getElementById("c-search")?.value || ""
-        ).toLowerCase();
-        const allCrops = await getAllCropsTagged();
-        const crops = allCrops.filter(
-          (c) =>
-            (cFilter === "all" || c.status === cFilter) &&
-            (!q ||
-              c.name.toLowerCase().includes(q) ||
-              c._username.toLowerCase().includes(q)),
-        );
-        const statusBadge = {
-          Planted: "b-planted",
-          Growing: "b-growing",
-          "Ready to Harvest": "b-ready",
-          Harvested: "b-harvested",
-        };
-        const statusLbl = {
-          Planted: "🌱 Nagtanim",
-          Growing: "🌿 Lumalaki",
-          "Ready to Harvest": "🌾 Handa na",
-          Harvested: "✅ Na-ani",
-        };
-        const tb = document.getElementById("crops-tb");
-        if (!crops.length) {
-          tb.innerHTML =
-            '<tr><td colspan="6"><div class="empty"><div class="empty-ico">🌿</div>Walang tanaman.</div></td></tr>';
-          return;
-        }
-        tb.innerHTML = crops
-          .map((c) => {
-            const d =
-              c.status === "Harvested"
-                ? "—"
-                : (() => {
-                    const n = daysUntil(c.harvest_at);
-                    if (n === null) return "—";
-                    if (n < 0)
-                      return (
-                        '<span style="color:var(--red)">' +
-                        Math.abs(n) +
-                        "d nakalipas</span>"
-                      );
-                    if (n === 0)
-                      return '<span style="color:var(--red);font-weight:700">Ngayon!</span>';
-                    if (n <= 7)
-                      return (
-                        '<span style="color:var(--gold);font-weight:600">' +
-                        n +
-                        " araw</span>"
-                      );
-                    return n + " araw";
-                  })();
-            return (
-              "<tr>" +
-              "<td><strong>" +
-              escHtml(c.name) +
-              "</strong></td>" +
-              '<td><span style="background:var(--pale);border-radius:20px;padding:.1rem .55rem;font-size:.72rem;font-weight:700;color:var(--green)">' +
-              escHtml(c._username) +
-              "</span></td>" +
-              '<td><span class="badge ' +
-              (statusBadge[c.status] || "") +
-              '">' +
-              (statusLbl[c.status] || c.status) +
-              "</span></td>" +
-              '<td style="font-size:.78rem">' +
-              formatDate(c.planted_at) +
-              "</td>" +
-              '<td style="font-size:.78rem">' +
-              formatDate(c.harvest_at) +
-              "</td>" +
-              "<td>" +
-              d +
-              "</td>" +
-              "</tr>"
-            );
-          })
-          .join("");
-      }
-
-      /* ── SETTINGS ────────────────── */
-      function changePw() {
-        const cur = document.getElementById("s-cur-pw").value;
-        const nw = document.getElementById("s-new-pw").value;
-        const rep = document.getElementById("s-rep-pw").value;
+      async function changeMyPw() {
+        const cur = document.getElementById("pw-cur").value;
+        const nw = document.getElementById("pw-new").value;
+        const rep = document.getElementById("pw-rep").value;
         const msg = document.getElementById("pw-msg");
-        if (cur !== Store.getAdminPw()) {
+        const sess = Session.get();
+        const acc = await Accounts.findById(sess?.userId);
+        if (!acc || acc.password !== cur) {
           msg.style.color = "var(--red)";
           msg.textContent = "Mali ang kasalukuyang password.";
           return;
         }
         if (nw.length < 6) {
           msg.style.color = "var(--red)";
-          msg.textContent = "Kailangan ng 6+ karakter ang bagong password.";
+          msg.textContent = "Kailangan ng 6+ karakter.";
           return;
         }
         if (nw !== rep) {
@@ -1229,8 +689,8 @@ await Store.deletePrice(id);
           msg.textContent = "Hindi magkatugma ang mga password.";
           return;
         }
-        Store.setAdminPw(nw);
-        ["s-cur-pw", "s-new-pw", "s-rep-pw"].forEach(
+        await db.from("accounts").update({ password: nw }).eq("id", acc.id);
+        ["pw-cur", "pw-new", "pw-rep"].forEach(
           (id) => (document.getElementById(id).value = ""),
         );
         msg.style.color = "var(--green)";
@@ -1238,146 +698,915 @@ await Store.deletePrice(id);
         setTimeout(() => (msg.textContent = ""), 3000);
       }
 
-      async function exportData() {
-        const accounts = await Accounts.getAll();
-        const accountsWithData = [];
-        for (const a of accounts) {
-          accountsWithData.push({
-            ...a,
-            crops: await Store.getCrops(a.id),
-            expenses: await Store.getExpenses(a.id),
-          });
-        }
-        const data = {
-          exportedAt: new Date().toISOString(),
-          prices: await Store.getPrices(),
-          accounts: accountsWithData,
-        };
-        const blob = new Blob([JSON.stringify(data, null, 2)], {
-          type: "application/json",
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download =
-          "bugandayari-backup-" +
-          new Date().toISOString().slice(0, 10) +
-          ".json";
-        a.click();
-        URL.revokeObjectURL(url);
-        toast("✅ Na-export na ang data!");
-      }
-
-      async function importData(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async (ev) => {
+      /* ══ AUTO-RESTORE SESSION ══════════════ */
+      window.addEventListener("DOMContentLoaded", async () => {
+        // Session.restore() also calls setRlsUser so _currentUserId is set
+        const sess = Session.restore();
+        if (sess) {
           try {
-            const data = JSON.parse(ev.target.result);
-            if (data.prices) await Store.savePrices(data.prices);
-            if (data.accounts) {
-              const existing = await Accounts.getAll();
-              for (const a of data.accounts) {
-                if (!existing.find((x) => x.id === a.id)) {
-                  // Re-insert the account row directly via Supabase
-                  await db.from("accounts").upsert({
-                    id: a.id,
-                    username: a.username,
-                    password: a.password,
-                    created_at: a.created_at || a.createdAt || new Date().toISOString(),
-                    last_login: a.last_login || a.lastLogin || null,
-                  }, { onConflict: "id" });
-                }
-                if (a.crops) {
-                  for (const crop of a.crops) {
-                    await Store.saveCrop({ ...crop }, a.id);
-                  }
-                }
-                if (a.expenses) {
-                  for (const exp of a.expenses) {
-                    // upsert expense — addExpense uses insert; use db directly to avoid duplicates
-                    await db.from("expenses").upsert({ ...exp, user_id: a.id }, { onConflict: "id" });
-                  }
-                }
-              }
+            const acc = await Accounts.findById(sess.userId);
+            if (acc) {
+              // Ensure user ID is definitely set before rendering anything
+              setRlsUser(acc.id);
+              launchApp();
+              return;
             }
-            toast("✅ Na-import na ang data!");
-            renderDashboard();
+            // Account no longer exists in DB
+            Session.clear();
           } catch (err) {
-            console.error("importData error:", err);
-            toast("❌ Hindi ma-parse ang file. Siguraduhing tama ang JSON.");
+            // Network error: still launch with cached session so offline works
+            console.warn("[Session restore] Network error, launching offline:", err);
+            setRlsUser(sess.userId);
+            launchApp();
           }
-          e.target.value = "";
-        };
-        reader.readAsText(file);
+        }
+      });
+
+      /* ══ NAV ══════════════════════════════ */
+      let activeSec = "home";
+      document.querySelectorAll(".nav-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const s = btn.dataset.sec;
+          document
+            .querySelectorAll(".nav-btn")
+            .forEach((b) => b.classList.remove("active"));
+          document
+            .querySelectorAll(".section")
+            .forEach((x) => x.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById("sec-" + s).classList.add("active");
+          activeSec = s;
+          document
+            .getElementById("fab")
+            .classList.toggle(
+              "hidden",
+              s === "prices" || s === "ulat" || s === "account",
+            );
+          if (s === "home") renderHome();
+          if (s === "crops") renderCrops();
+          if (s === "prices") renderPrices();
+          if (s === "ulat") renderUlat();
+          if (s === "account") updateAccountSection();
+        });
+      });
+
+      /* ══ ONLINE STATUS ═════════════════════ */
+      function syncOnline() {
+        const off = !navigator.onLine;
+        document.getElementById("offline-pill").classList.toggle("show", off);
+        document.getElementById("offline-notice").classList.toggle("show", off);
+      }
+      window.addEventListener("online", syncOnline);
+      window.addEventListener("offline", syncOnline);
+      syncOnline();
+
+      /* ══ HOME ══════════════════════════════ */
+      async function renderHome() {
+        const all = await Store.getCrops();
+        const active = all.filter((c) => c.status !== "Harvested");
+        document.getElementById("cnt-planted").textContent = all.filter(
+          (c) => c.status === "Planted",
+        ).length;
+        document.getElementById("cnt-growing").textContent = all.filter(
+          (c) => c.status === "Growing",
+        ).length;
+        document.getElementById("cnt-ready").textContent = all.filter(
+          (c) => c.status === "Ready to Harvest",
+        ).length;
+        document.getElementById("cnt-harvested").textContent = all.filter(
+          (c) => c.status === "Harvested",
+        ).length;
+        const due = active.filter((c) => {
+          const d = daysUntil(c.harvest_at);
+          return d !== null && d >= 0 && d <= 7;
+        });
+        const strip = document.getElementById("alert-strip");
+        if (due.length) {
+          document.getElementById("alert-text").textContent =
+            due.length +
+            " tanaman ang mag-aani sa loob ng 7 araw: " +
+            due.map((c) => c.name).join(", ");
+          strip.classList.remove("hidden");
+        } else {
+          strip.classList.add("hidden");
+        }
+        const list = document.getElementById("home-list");
+        if (!active.length) {
+          list.innerHTML = emptyState(
+            "🌱",
+            "Wala pang tanaman. Pindutin ang + para magdagdag.",
+          );
+          return;
+        }
+        list.innerHTML = active.map((c) => cropCardHTML(c)).join("");
+        attachCards(list);
       }
 
-      async function confirmResetPrices() {
-        showConfirm(
-          "I-reset ang Presyo",
-          "Ibabalik ang lahat ng presyo sa mga default na halaga. Mawawala ang lahat ng mga pagbabago.",
-          async () => {
-            await Store.savePrices(DEFAULT_PRICES);
-            localStorage.removeItem("bdyari_prices_updated");
-            toast("✅ Na-reset na ang mga presyo!");
-            if (activePanel === "prices") renderAdminPrices();
-          },
+      /* ══ CROPS ═════════════════════════════ */
+      let cropFilter = "all";
+      document.querySelectorAll("#crop-filters .chip").forEach((ch) => {
+        ch.addEventListener("click", () => {
+          document
+            .querySelectorAll("#crop-filters .chip")
+            .forEach((x) => x.classList.remove("on"));
+          ch.classList.add("on");
+          cropFilter = ch.dataset.f;
+          renderCrops();
+        });
+      });
+
+      async function renderCrops() {
+        const all = await Store.getCrops();
+        const active = all.filter((c) => c.status !== "Harvested");
+        const past = all.filter((c) => c.status === "Harvested");
+        const shown =
+          cropFilter === "all"
+            ? active
+            : active.filter((c) => c.status === cropFilter);
+        const list = document.getElementById("crops-list");
+        list.innerHTML = shown.length
+          ? shown.map((c) => cropCardHTML(c)).join("")
+          : emptyState("🌿", "Walang tanaman sa kategoryang ito.");
+        attachCards(list);
+        const pastList = document.getElementById("past-list");
+        pastList.innerHTML = past.length
+          ? past.map((c) => cropCardHTML(c, true)).join("")
+          : emptyState("📦", "Wala pang nakaraang ani.");
+        attachCards(pastList);
+      }
+
+      function cropCardHTML(c, isPast = false) {
+        const d = daysUntil(c.harvest_at);
+        let daysTag = "",
+          urgentCls = "";
+        if (d !== null && c.status !== "Harvested") {
+          if (d < 0) daysTag = Math.abs(d) + "d na nakalipas";
+          else if (d === 0) {
+            daysTag = "Ngayon!";
+            urgentCls = "urgent";
+          } else if (d <= 7) {
+            daysTag = d + " araw na lang";
+            urgentCls = "urgent";
+          } else daysTag = d + " araw pa";
+        }
+        const statusMap = {
+          Planted: "b-planted",
+          Growing: "b-growing",
+          "Ready to Harvest": "b-ready",
+          Harvested: "b-harvested",
+        };
+        const statusLabel = {
+          Planted: "🌱 Nagtanim",
+          Growing: "🌿 Lumalaki",
+          "Ready to Harvest": "🌾 Handa na",
+          Harvested: "✅ Na-ani",
+        };
+        const dueCls = !isPast && d !== null && d >= 0 && d <= 7 ? "due" : "";
+        return (
+          '<div class="crop-card ' +
+          dueCls +
+          (isPast ? " past-card" : "") +
+          '" data-id="' +
+          c.id +
+          '">' +
+          '<div class="crop-left">' +
+          '<div class="crop-name">' +
+          escHtml(c.name) +
+          "</div>" +
+          '<div class="crop-sub"><span>Tanim: ' +
+          formatDate(c.planted_at) +
+          "</span><span>Ani: " +
+          formatDate(c.harvest_at) +
+          "</span></div>" +
+          (c.notes
+            ? '<div class="crop-note">' + escHtml(c.notes) + "</div>"
+            : "") +
+          '</div><div class="crop-right">' +
+          '<span class="badge ' +
+          (statusMap[c.status] || "") +
+          '">' +
+          (statusLabel[c.status] || c.status) +
+          "</span>" +
+          (daysTag
+            ? '<span class="days-tag ' + urgentCls + '">' + daysTag + "</span>"
+            : "") +
+          (c.yield
+            ? '<span class="days-tag">🏋️ ' + c.yield + " " + c.unit + "</span>"
+            : "") +
+          "</div></div>"
         );
       }
 
-
-async function confirmClearAllCrops() {
-  showConfirm(
-    "Burahin ang Lahat ng Tanaman",
-    "BABALA: Permanently na mabubura ang lahat ng rekord ng tanaman ng lahat ng users. Hindi na maibabalik.",
-    async () => {
-      const allAccs = await Accounts.getAll();
-      for (const acc of allAccs) {
-        await Store.clearCrops(acc.id);
-        await Store.clearExpenses(acc.id);
+      function attachCards(container) {
+        container.querySelectorAll(".crop-card").forEach((el) => {
+          el.addEventListener("click", () => openViewModal(el.dataset.id));
+        });
       }
-      toast("🗑️ Nabura na ang lahat ng tanaman.");
-      if (activePanel === "crops") renderAdminCrops();
-      if (activePanel === "dashboard") renderDashboard();
-    },
-  );
-}
 
-      /* ── MODAL HELPERS ───────────── */
-      function openOv(id) {
+      /* ══ PRICES ════════════════════════════ */
+      let pricesCat = "all";
+      document.querySelectorAll("#cat-chips .chip").forEach((ch) => {
+        ch.addEventListener("click", () => {
+          document
+            .querySelectorAll("#cat-chips .chip")
+            .forEach((x) => x.classList.remove("on"));
+          ch.classList.add("on");
+          pricesCat = ch.dataset.cat;
+          renderPrices();
+        });
+      });
+
+      async function renderPrices() {
+        const upd = Store.getPricesUpdated();
+        document.getElementById("price-updated").textContent = upd
+          ? "Na-update: " + upd
+          : "";
+        const q = (document.getElementById("price-search").value || "")
+          .toLowerCase()
+          .trim();
+        const prices = await Store.getPrices();
+        const cats = ["Bigas", "Mais", "Gulay", "Prutas", "Ugat"];
+        const list = document.getElementById("prices-list");
+        const filtered = cats
+          .filter((cat) => pricesCat === "all" || cat === pricesCat)
+          .map((cat) => ({
+            cat,
+            items: prices.filter(
+              (p) =>
+                p.category === cat && (!q || p.name.toLowerCase().includes(q)),
+            ),
+          }))
+          .filter((g) => g.items.length);
+        if (!filtered.length) {
+          list.innerHTML = emptyState("🔍", "Walang nahanap na produkto.");
+          return;
+        }
+        list.innerHTML = filtered
+          .map((g) => {
+            const meta = CATEGORY_META[g.cat] || { icon: "📦" };
+            return (
+              '<div class="price-section"><div class="price-cat-hd">' +
+              meta.icon +
+              " " +
+              g.cat +
+              '</div><div class="price-wrap"><table class="price-table"><thead><tr><th>Produkto</th><th>Yunit</th><th>Presyo</th><th></th></tr></thead><tbody>' +
+              g.items
+                .map(
+                  (p) =>
+                    "<tr><td>" +
+                    escHtml(p.name) +
+                    "</td><td>" +
+                    escHtml(p.unit) +
+                    '</td><td><span class="pval">₱' +
+                    Number(p.price).toFixed(2) +
+                    "</span></td><td>" +
+                    trendIcon(p.trend) +
+                    "</td></tr>",
+                )
+                .join("") +
+              "</tbody></table></div></div>"
+            );
+          })
+          .join("");
+      }
+
+      function trendIcon(t) {
+        if (t === "up")
+          return '<span class="trend t-up" title="Tumaas">▲</span>';
+        if (t === "down")
+          return '<span class="trend t-down" title="Bumaba">▼</span>';
+        return '<span class="trend t-same" title="Walang pagbabago">—</span>';
+      }
+
+      /* ══ MODALS ════════════════════════════ */
+      let editId = null;
+      function openAddModal() {
+        editId = null;
+        document.getElementById("m-crop-title").textContent = "Bagong Tanaman";
+        document.getElementById("m-id").value = "";
+        document.getElementById("m-name").value = "";
+        document.getElementById("m-plant").value = todayISO();
+        document.getElementById("m-harvest").value = "";
+        document.getElementById("m-status").value = "Planted";
+        document.getElementById("m-yield").value = "";
+        document.getElementById("m-unit").value = "kilo";
+        document.getElementById("m-notes").value = "";
+        openModal("ov-crop");
+      }
+
+      async function openViewModal(id) {
+        const crops = await Store.getCrops();
+        const c = crops.find((x) => x.id === id);
+        if (!c) return;
+        document.getElementById("v-title").textContent = c.name;
+        const d = daysUntil(c.harvest_at);
+        let dinfo = "";
+        if (d !== null) {
+          if (d < 0) dinfo = " — " + Math.abs(d) + " araw na nakalipas";
+          else if (d === 0) dinfo = " — Ngayon!";
+          else dinfo = " — " + d + " araw pa";
+        }
+        const statusLabel = {
+          Planted: "🌱 Nagtanim",
+          Growing: "🌿 Lumalaki",
+          "Ready to Harvest": "🌾 Handa na",
+          Harvested: "✅ Na-ani",
+        };
+        const exps = await Store.getExpensesForCrop(id);
+        const gastos = exps
+          .filter((e) => e.type === "gastos")
+          .reduce((s, e) => s + Number(e.amount), 0);
+        const kita = exps
+          .filter((e) => e.type === "kita")
+          .reduce((s, e) => s + Number(e.amount), 0);
+        const net = kita - gastos;
+        const netColor = net >= 0 ? "#2e7d32" : "var(--red)";
+        const expRow = exps.length
+          ? '<div class="divider"></div><div style="display:flex;justify-content:space-around;padding:.4rem 0"><div style="text-align:center"><div style="font-size:.68rem;color:var(--text-3);text-transform:uppercase;font-weight:700">Gastos</div><div style="font-weight:900;font-family:\'Fraunces\',serif;color:var(--red)">₱' +
+            gastos.toLocaleString("en-PH", { minimumFractionDigits: 0 }) +
+            '</div></div><div style="text-align:center"><div style="font-size:.68rem;color:var(--text-3);text-transform:uppercase;font-weight:700">Kita</div><div style="font-weight:900;font-family:\'Fraunces\',serif;color:#2e7d32">₱' +
+            kita.toLocaleString("en-PH", { minimumFractionDigits: 0 }) +
+            '</div></div><div style="text-align:center"><div style="font-size:.68rem;color:var(--text-3);text-transform:uppercase;font-weight:700">Net</div><div style="font-weight:900;font-family:\'Fraunces\',serif;color:' +
+            netColor +
+            '">' +
+            (net >= 0 ? "+" : "") +
+            "₱" +
+            net.toLocaleString("en-PH", { minimumFractionDigits: 0 }) +
+            "</div></div></div>"
+          : "";
+        document.getElementById("v-body").innerHTML =
+          '<div class="detail-row"><span class="detail-label">Katayuan</span><span class="detail-val">' +
+          (statusLabel[c.status] || c.status) +
+          "</span></div>" +
+          '<div class="detail-row"><span class="detail-label">Petsa ng Tanim</span><span class="detail-val">' +
+          formatDate(c.planted_at) +
+          "</span></div>" +
+          '<div class="detail-row"><span class="detail-label">Inaasahang Ani</span><span class="detail-val">' +
+          formatDate(c.harvest_at) +
+          dinfo +
+          "</span></div>" +
+          (c.yield
+            ? '<div class="detail-row"><span class="detail-label">Dami ng Ani</span><span class="detail-val">' +
+              c.yield +
+              " " +
+              c.unit +
+              "</span></div>"
+            : "") +
+          (c.notes
+            ? '<div class="detail-row"><span class="detail-label">Mga Tala</span><span class="detail-val">' +
+              escHtml(c.notes) +
+              "</span></div>"
+            : "") +
+          '<div class="detail-row"><span class="detail-label">Naidagdag</span><span class="detail-val">' +
+          formatDate(c.created_at?.slice(0, 10)) +
+          "</span></div>" +
+          expRow;
+        document.getElementById("v-edit-btn").onclick = () => {
+          closeModal("ov-view");
+          openEditModal(id);
+        };
+        document.getElementById("v-del-btn").onclick = () =>
+          confirmDelete(id, c.name);
+        const ft = document.querySelector("#ov-view .modal-ft");
+        let expBtn = document.getElementById("v-exp-btn");
+        if (!expBtn) {
+          expBtn = document.createElement("button");
+          expBtn.id = "v-exp-btn";
+          expBtn.className = "btn btn-ghost";
+          expBtn.style.cssText = "margin-right:auto;font-size:.82rem";
+          ft.prepend(expBtn);
+        }
+        expBtn.textContent = "💸 Gastos/Kita";
+        expBtn.onclick = () => {
+          closeModal("ov-view");
+          openExpenseModal(id);
+        };
+        openModal("ov-view");
+      }
+
+      async function openEditModal(id) {
+        const crops = await Store.getCrops();
+        const c = crops.find((x) => x.id === id);
+        if (!c) return;
+        editId = id;
+        document.getElementById("m-crop-title").textContent =
+          "I-edit ang Tanaman";
+        document.getElementById("m-id").value = id;
+        document.getElementById("m-name").value = c.name;
+        document.getElementById("m-plant").value = c.planted_at;
+        document.getElementById("m-harvest").value = c.harvest_at;
+        document.getElementById("m-status").value = c.status;
+        document.getElementById("m-yield").value = c.yield || "";
+        document.getElementById("m-unit").value = c.unit || "kilo";
+        document.getElementById("m-notes").value = c.notes || "";
+        openModal("ov-crop");
+      }
+
+      async function saveCrop() {
+        const name = document.getElementById("m-name").value.trim();
+        const planted_at = document.getElementById("m-plant").value;
+        const harvest_at = document.getElementById("m-harvest").value;
+        const status = document.getElementById("m-status").value;
+        const yieldVal = document.getElementById("m-yield").value;
+        const unit = document.getElementById("m-unit").value;
+        const notes = document.getElementById("m-notes").value.trim();
+        if (!name) { toast("⚠️ Kailangan ang pangalan ng pananim."); return; }
+        if (!planted_at) { toast("⚠️ Piliin ang petsa ng pagtatanim."); return; }
+        if (!harvest_at) { toast("⚠️ Piliin ang inaasahang petsa ng pag-ani."); return; }
+
+        // If editing, preserve the original created_at so Supabase upsert doesn't fail
+        let existingCreatedAt = null;
+        if (editId) {
+          const all = await Store.getCrops();
+          const existing = all.find((x) => x.id === editId);
+          existingCreatedAt = existing?.created_at || null;
+        }
+
+        const crop = {
+          id: editId || genId(),
+          name,
+          planted_at,
+          harvest_at,
+          status,
+          yield: yieldVal ? parseFloat(yieldVal) : null,
+          unit,
+          notes,
+          // Always a real value — never undefined or null
+          created_at: existingCreatedAt || new Date().toISOString(),
+        };
+        const saved = await Store.saveCrop(crop);
+        if (!saved) {
+          toast("❌ Hindi na-save. Subukang muli o tingnan ang console.");
+          return;
+        }
+        toast(editId ? "✅ Na-update na ang tanaman!" : "🌱 Naidagdag ang bagong tanaman!");
+        closeModal("ov-crop");
+        renderHome();
+        if (activeSec === "crops") renderCrops();
+      }
+
+      function confirmDelete(id, name) {
+        document.getElementById("confirm-msg").textContent =
+          'Burahin ang "' + name + '"? Hindi na ito maibabalik.';
+        document.getElementById("confirm-yes").onclick = async () => {
+          await Store.deleteCrop(id);
+          closeModal("ov-confirm");
+          closeModal("ov-view");
+          toast("🗑️ Nabura na ang tanaman.");
+          renderHome();
+          if (activeSec === "crops") renderCrops();
+        };
+        document.getElementById("confirm-no").onclick = () =>
+          closeModal("ov-confirm");
+        openModal("ov-confirm");
+      }
+
+      function openModal(id) {
         document.getElementById(id).classList.remove("hidden");
         document.body.style.overflow = "hidden";
       }
-      function closeOv(id) {
+      function closeModal(id) {
         document.getElementById(id).classList.add("hidden");
         if (!document.querySelector(".overlay:not(.hidden)"))
           document.body.style.overflow = "";
       }
       document.querySelectorAll(".overlay").forEach((ov) => {
         ov.addEventListener("click", (e) => {
-          if (e.target === ov) closeOv(ov.id);
+          if (e.target === ov) closeModal(ov.id);
         });
       });
 
-      function showConfirm(title, msg, onYes) {
-        document.getElementById("cf-title").textContent = title;
-        document.getElementById("cf-msg").textContent = msg;
-        document.getElementById("cf-yes").onclick = () => {
-          closeOv("ov-confirm");
-          onYes();
-        };
-        openOv("ov-confirm");
+      /* ══ EXPENSES ══════════════════════════ */
+      function openExpenseModal(cropId) {
+        document.getElementById("exp-crop-id").value = cropId;
+        document.getElementById("exp-amount").value = "";
+        document.getElementById("exp-label").value = "";
+        document.getElementById("exp-date").value = todayISO();
+        document.getElementById("exp-type").value = "gastos";
+        renderExpHistory(cropId);
+        openModal("ov-expense");
       }
 
-      /* ── TOAST ───────────────────── */
-      let _tt;
+      async function renderExpHistory(cropId) {
+        const list = await Store.getExpensesForCrop(cropId);
+        const el = document.getElementById("exp-history");
+        if (!list.length) {
+          el.innerHTML =
+            '<p style="font-size:.82rem;color:var(--text-3);text-align:center;padding:.5rem 0">Wala pang naitala.</p>';
+          return;
+        }
+        const sorted = [...list].sort((a, b) => b.date.localeCompare(a.date));
+        el.innerHTML = sorted
+          .map(
+            (e) =>
+              '<div class="exp-row"><div class="exp-badge">' +
+              (e.type === "gastos" ? "💸" : "💰") +
+              "</div>" +
+              '<div class="exp-info"><div class="exp-label">' +
+              escHtml(e.label || "—") +
+              '</div><div class="exp-date">' +
+              formatDate(e.date) +
+              "</div></div>" +
+              '<div class="exp-amt ' +
+              e.type +
+              '">₱' +
+              Number(e.amount).toLocaleString("en-PH", {
+                minimumFractionDigits: 2,
+              }) +
+              "</div>" +
+              '<button class="exp-del" onclick="deleteExpense(\'' +
+              e.id +
+              "','" +
+              cropId +
+              "')\">✕</button></div>",
+          )
+          .join("");
+      }
+
+      async function saveExpense() {
+        const cropId = document.getElementById("exp-crop-id").value;
+        const type = document.getElementById("exp-type").value;
+        const amount = parseFloat(document.getElementById("exp-amount").value);
+        const label = document.getElementById("exp-label").value.trim();
+        const date = document.getElementById("exp-date").value;
+        if (!amount || amount <= 0) { toast("⚠️ Ilagay ang tamang halaga."); return; }
+        const saved = await Store.addExpense({ crop_id: cropId, type, amount, label, date });
+        if (!saved) {
+          toast("❌ Hindi na-save ang gastos/kita. Subukang muli.");
+          return;
+        }
+        document.getElementById("exp-amount").value = "";
+        document.getElementById("exp-label").value = "";
+        renderExpHistory(cropId);
+        toast(type === "gastos" ? "💸 Naitala ang gastos!" : "💰 Naitala ang kita!");
+        if (activeSec === "ulat") renderUlat();
+      }
+
+      async function deleteExpense(id, cropId) {
+        await Store.deleteExpense(id);
+        renderExpHistory(cropId);
+        toast("🗑️ Nabura.");
+        if (activeSec === "ulat") renderUlat();
+      }
+
+      /* ══ ULAT ═══════════════════════════════ */
+      async function renderUlat() {
+        const crops = await Store.getCrops();
+        const expenses = await Store.getExpenses();
+        const totalGastos = expenses
+          .filter((e) => e.type === "gastos")
+          .reduce((s, e) => s + Number(e.amount), 0);
+        const totalKita = expenses
+          .filter((e) => e.type === "kita")
+          .reduce((s, e) => s + Number(e.amount), 0);
+        const net = totalKita - totalGastos;
+        const active = crops.filter((c) => c.status !== "Harvested").length;
+        document.getElementById("ulat-kpi").innerHTML =
+          '<div class="ukpi"><div class="ukpi-n">' +
+          crops.length +
+          '</div><div class="ukpi-l">Kabuuang Tanaman</div></div>' +
+          '<div class="ukpi"><div class="ukpi-n">' +
+          active +
+          '</div><div class="ukpi-l">Aktibong Pananim</div></div>' +
+          '<div class="ukpi"><div class="ukpi-n" style="color:#2e7d32">₱' +
+          totalKita.toLocaleString("en-PH", { maximumFractionDigits: 0 }) +
+          '</div><div class="ukpi-l">Kabuuang Kita</div></div>' +
+          '<div class="ukpi"><div class="ukpi-n" style="color:' +
+          (net >= 0 ? "#2e7d32" : "var(--red)") +
+          '">₱' +
+          (net >= 0 ? "+" : "") +
+          net.toLocaleString("en-PH", { maximumFractionDigits: 0 }) +
+          '</div><div class="ukpi-l">Net Kita</div></div>';
+        const cropData = crops
+          .map((c) => {
+            const ce = expenses.filter((e) => e.crop_id === c.id);
+            const g = ce
+              .filter((e) => e.type === "gastos")
+              .reduce((s, e) => s + Number(e.amount), 0);
+            const k = ce
+              .filter((e) => e.type === "kita")
+              .reduce((s, e) => s + Number(e.amount), 0);
+            return { ...c, gastos: g, kita: k, net: k - g };
+          })
+          .filter((c) => c.gastos > 0 || c.kita > 0);
+        const earners = [...cropData]
+          .sort((a, b) => b.kita - a.kita)
+          .slice(0, 6);
+        const maxKita = Math.max(...earners.map((c) => c.kita), 1);
+        const barColors = [
+          "#2e7d32",
+          "#388e3c",
+          "#43a047",
+          "#4caf50",
+          "#66bb6a",
+          "#81c784",
+        ];
+        document.getElementById("chart-top-crops").innerHTML = earners.length
+          ? earners
+              .map(
+                (c, i) =>
+                  '<div class="bar-row"><div class="bar-name" title="' +
+                  escHtml(c.name) +
+                  '">' +
+                  escHtml(c.name) +
+                  '</div><div class="bar-track"><div class="bar-fill" style="width:' +
+                  ((c.kita / maxKita) * 100).toFixed(1) +
+                  "%;background:" +
+                  barColors[i % barColors.length] +
+                  '"></div></div><div class="bar-val">₱' +
+                  c.kita.toLocaleString("en-PH", { maximumFractionDigits: 0 }) +
+                  "</div></div>",
+              )
+              .join("")
+          : '<p style="font-size:.82rem;color:var(--text-3);text-align:center;padding:.5rem 0">Wala pang naitala na kita.</p>';
+        const statusLabel = {
+          Planted: "🌱",
+          Growing: "🌿",
+          "Ready to Harvest": "🌾",
+          Harvested: "✅",
+        };
+        document.getElementById("crop-profit-list").innerHTML = cropData.length
+          ? cropData
+              .sort((a, b) => b.net - a.net)
+              .map(
+                (c) =>
+                  '<div class="cpl-row"><div><div class="cpl-name">' +
+                  escHtml(c.name) +
+                  '</div><div class="cpl-status">' +
+                  (statusLabel[c.status] || "") +
+                  " " +
+                  c.status +
+                  " · G:₱" +
+                  c.gastos.toLocaleString("en-PH", {
+                    maximumFractionDigits: 0,
+                  }) +
+                  " K:₱" +
+                  c.kita.toLocaleString("en-PH", { maximumFractionDigits: 0 }) +
+                  '</div></div><div class="cpl-net" style="color:' +
+                  (c.net >= 0 ? "#2e7d32" : "var(--red)") +
+                  '">' +
+                  (c.net >= 0 ? "+" : "") +
+                  "₱" +
+                  c.net.toLocaleString("en-PH", { maximumFractionDigits: 0 }) +
+                  "</div></div>",
+              )
+              .join("")
+          : '<p style="font-size:.82rem;color:var(--text-3);text-align:center;padding:.75rem 0">Pindutin ang isang tanaman → 💸 Gastos/Kita para mag-log.</p>';
+      }
+
+      /* ══ TIMELINE ══════════════════════════ */
+      let cropsView = "list";
+      function setCropsView(v) {
+        cropsView = v;
+        document
+          .getElementById("vt-list")
+          .classList.toggle("active", v === "list");
+        document
+          .getElementById("vt-timeline")
+          .classList.toggle("active", v === "timeline");
+        document
+          .getElementById("crops-view-list")
+          .classList.toggle("hidden", v !== "list");
+        document
+          .getElementById("crops-view-timeline")
+          .classList.toggle("hidden", v !== "timeline");
+        if (v === "timeline") renderTimeline();
+      }
+
+      async function renderTimeline() {
+        const crops = await Store.getCrops();
+        const wrap = document.getElementById("timeline-wrap");
+        if (!crops.length) {
+          wrap.innerHTML = emptyState(
+            "📅",
+            "Wala pang tanaman para sa timeline.",
+          );
+          return;
+        }
+        const allDates = crops.flatMap((c) =>
+          [c.planted_at, c.harvest_at].filter(Boolean),
+        );
+        const minDate = new Date(allDates.sort()[0]);
+        const maxDate = new Date(allDates.sort().reverse()[0]);
+        minDate.setDate(1);
+        maxDate.setMonth(maxDate.getMonth() + 1, 1);
+        const totalDays = Math.max((maxDate - minDate) / 86400000, 30);
+        const months = [];
+        const cur = new Date(minDate);
+        while (cur < maxDate) {
+          months.push({
+            label: cur.toLocaleDateString("fil-PH", {
+              month: "short",
+              year: "2-digit",
+            }),
+            date: new Date(cur),
+          });
+          cur.setMonth(cur.getMonth() + 1);
+        }
+        const NAME_W = 90;
+        const statusColors = {
+          Planted: "#558b2f",
+          Growing: "#2e7d32",
+          "Ready to Harvest": "#c8a017",
+          Harvested: "#1565c0",
+        };
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayPct = Math.max(
+          0,
+          Math.min(100, ((today - minDate) / 86400000 / totalDays) * 100),
+        );
+        let html = '<div style="min-width:340px">';
+        html +=
+          '<div style="display:grid;grid-template-columns:' +
+          NAME_W +
+          'px 1fr;align-items:end;padding:.35rem 0;border-bottom:2px solid var(--tan);position:sticky;top:0;background:var(--cream);z-index:10"><div style="font-size:.68rem;font-weight:700;color:var(--text-3);text-transform:uppercase">Pananim</div><div style="display:flex;position:relative;height:18px">' +
+          months
+            .map((m) => {
+              const left = ((m.date - minDate) / 86400000 / totalDays) * 100;
+              return (
+                '<div style="position:absolute;left:' +
+                left +
+                '%;font-size:.58rem;color:var(--text-3);font-weight:700;white-space:nowrap">' +
+                m.label +
+                "</div>"
+              );
+            })
+            .join("") +
+          "</div></div>";
+        crops.forEach((c) => {
+          if (!c.planted_at || !c.harvest_at) return;
+          const start = new Date(c.planted_at + "T00:00:00"),
+            end = new Date(c.harvest_at + "T00:00:00");
+          const left = Math.max(
+            0,
+            ((start - minDate) / 86400000 / totalDays) * 100,
+          );
+          const width = Math.max(
+            1,
+            ((end - start) / 86400000 / totalDays) * 100,
+          );
+          const color = statusColors[c.status] || "#4a8c3f";
+          html +=
+            '<div style="display:grid;grid-template-columns:' +
+            NAME_W +
+            'px 1fr;align-items:center;padding:.35rem 0;border-bottom:1px solid var(--parchment)"><div style="font-size:.78rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:.5rem">' +
+            escHtml(c.name) +
+            '</div><div style="position:relative;height:22px"><div style="position:absolute;left:' +
+            left +
+            "%;width:" +
+            width +
+            "%;height:16px;top:3px;border-radius:8px;background:" +
+            color +
+            ';min-width:6px" title="' +
+            c.name +
+            ": " +
+            c.planted_at +
+            " → " +
+            c.harvest_at +
+            '"></div><div style="position:absolute;left:' +
+            todayPct +
+            '%;top:0;bottom:0;width:2px;background:var(--terra);opacity:.7;pointer-events:none"></div></div></div>';
+        });
+        html += "</div>";
+        wrap.innerHTML = html;
+      }
+
+      /* ══ WEATHER ══════════════════════════ */
+      const WX_CODES = {
+        0: "☀️",
+        1: "🌤️",
+        2: "⛅",
+        3: "☁️",
+        45: "🌫️",
+        48: "🌫️",
+        51: "🌦️",
+        53: "🌦️",
+        55: "🌧️",
+        61: "🌧️",
+        63: "🌧️",
+        65: "🌧️",
+        80: "🌦️",
+        81: "🌧️",
+        82: "⛈️",
+        95: "⛈️",
+        96: "⛈️",
+        99: "⛈️",
+      };
+      const WX_DESC = {
+        0: "Maliwanag",
+        1: "Halos maliwanag",
+        2: "May ulap",
+        3: "Maulap",
+        45: "Maulap/Ambon",
+        51: "Ambon",
+        61: "Ulan",
+        63: "Katamtamang ulan",
+        80: "Ambon-ulan",
+        81: "Ulan",
+        95: "Bagyo",
+      };
+      async function loadWeather() {
+        const cached = Store.getCachedWeather();
+        if (cached) {
+          renderWeather(cached);
+          return;
+        }
+        try {
+          const url =
+            "https://api.open-meteo.com/v1/forecast?latitude=10.72&longitude=122.56&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation&daily=weather_code,temperature_2m_max,precipitation_sum&timezone=Asia%2FManila&forecast_days=5";
+          const r = await fetch(url);
+          if (!r.ok) throw new Error();
+          const data = await r.json();
+          Store.setCachedWeather(data);
+          renderWeather(data);
+        } catch (e) {
+          document.getElementById("wx-desc").textContent =
+            "Hindi ma-load ang panahon";
+        }
+      }
+
+      function renderWeather(data) {
+        const c = data.current,
+          d = data.daily,
+          code = c.weather_code;
+        document.getElementById("wx-ico").textContent = WX_CODES[code] || "🌡️";
+        document.getElementById("wx-temp").textContent =
+          Math.round(c.temperature_2m) + "°";
+        document.getElementById("wx-desc").textContent =
+          WX_DESC[code] || "Kalagayan ng panahon";
+        document.getElementById("wx-hum").textContent = c.relative_humidity_2m;
+        document.getElementById("wx-wind").textContent = Math.round(
+          c.wind_speed_10m,
+        );
+        document.getElementById("wx-rain").textContent =
+          c.precipitation.toFixed(1);
+        const days = ["Lin", "Lun", "Mar", "Miy", "Huw", "Biy", "Sab"];
+        document.getElementById("wx-forecast").innerHTML = (d.time || [])
+          .map((t, i) => {
+            const dt = new Date(t + "T00:00:00");
+            return (
+              '<div class="fc-day"><div class="fc-day-name">' +
+              (i === 0 ? "Ngayon" : days[dt.getDay()]) +
+              '</div><div class="fc-day-ico">' +
+              (WX_CODES[d.weather_code[i]] || "🌡️") +
+              '</div><div class="fc-day-t">' +
+              Math.round(d.temperature_2m_max[i]) +
+              "°</div></div>"
+            );
+          })
+          .join("");
+      }
+
+      /* ══ TOAST ═════════════════════════════ */
+      let _toastT;
       function toast(msg) {
         const el = document.getElementById("toast");
         el.textContent = msg;
         el.classList.add("show");
-        clearTimeout(_tt);
-        _tt = setTimeout(() => el.classList.remove("show"), 3200);
+        clearTimeout(_toastT);
+        _toastT = setTimeout(() => el.classList.remove("show"), 3000);
+      }
+
+      /* ══ EMPTY STATE ═══════════════════════ */
+      function emptyState(ico, msg) {
+        return (
+          '<div class="empty"><div class="empty-ico">' +
+          ico +
+          "</div><p>" +
+          msg +
+          "</p></div>"
+        );
+      }
+
+      /* ══ INSTALL PROMPT ════════════════════ */
+      let deferredPrompt;
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById("install-bar").classList.remove("hidden");
+      });
+      document.getElementById("install-btn").addEventListener("click", () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          deferredPrompt = null;
+          document.getElementById("install-bar").classList.add("hidden");
+        });
+      });
+      document
+        .getElementById("install-dismiss")
+        .addEventListener("click", () => {
+          document.getElementById("install-bar").classList.add("hidden");
+        });
+
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("sw.js")
+            .then(() => console.log("[Bugandayari] SW ready"))
+            .catch((e) => console.warn("[Bugandayari] SW error", e));
+        });
       }
     </script>
   </body>
